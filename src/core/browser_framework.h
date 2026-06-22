@@ -27,6 +27,8 @@ private:
 
     // method connecting interactive buttons with page
     void connectNavigation();
+    //
+    void connectAddressBar();
 
 signals:
 };

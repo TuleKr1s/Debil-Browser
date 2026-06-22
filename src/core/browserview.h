@@ -13,7 +13,7 @@ class BrowserView : public QWebEngineView
 public:
     BrowserView(QWidget* parent = nullptr);
 
-    void setURL(const QUrl& url);
+
 
 
 public slots:
@@ -22,6 +22,7 @@ public slots:
     void goForward();
     void reloadPage();
     // ============
+    void setURL(const QUrl& url);
 };
 
 #endif // HOMEPAGE_H

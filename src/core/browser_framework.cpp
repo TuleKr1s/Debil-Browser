@@ -9,8 +9,9 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 
     main_pannel = new MainPannel(this);
 
-
+    // necessary connections
     connectNavigation();
+    connectAddressBar();
 
 
     main_lay = new QVBoxLayout(this);
@@ -31,4 +32,10 @@ void Browser_Framework::connectNavigation()
             viewing_window, SLOT(goForward()));
     connect(main_pannel->nav_wgt->reload_btn, SIGNAL(clicked()),
             viewing_window, SLOT(reloadPage()));
+}
+
+void Browser_Framework::connectAddressBar()
+{
+    connect(main_pannel->address_bar, SIGNAL(navigateRequested(QUrl)),
+            viewing_window, SLOT(setURL(QUrl)));
 }

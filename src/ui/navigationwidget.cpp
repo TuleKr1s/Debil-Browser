@@ -21,6 +21,8 @@ NavigationWidget::NavigationWidget(QWidget *parent)
     main_lay->addWidget(forward_btn);
     main_lay->addWidget(reload_btn);
 
+    main_lay->addStretch(1);
+
     this->setLayout(main_lay);
 
 }

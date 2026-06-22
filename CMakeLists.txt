@@ -31,6 +31,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         src/core/browser_framework.h src/core/browser_framework.cpp
         src/ui/navigationwidget.h src/ui/navigationwidget.cpp
+        src/web/searchengine_factory.h
+        src/web/search_engines/isearchengine.h
+        src/web/search_engines/googlesearchengine.h
+        src/web/search_engines/yandexsearchengine.h
+        src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
+        src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
+
 
     )
 # Define target properties for Android with Qt 6 as:

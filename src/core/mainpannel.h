@@ -3,7 +3,10 @@
 
 #include <QWidget>
 #include <QBoxLayout>
+
+
 #include "../ui/navigationwidget.h"
+#include "../ui/addressbarwidget.h"
 
 // Class that combines widgets related to main pannel
 
@@ -13,7 +16,9 @@ class MainPannel : public QWidget
 public:
     explicit MainPannel(QWidget *parent = nullptr);
 
+
     NavigationWidget* nav_wgt;
+    AddressBarWidget* address_bar;
 
 private:
 
