@@ -7,6 +7,10 @@
 #include <QBoxLayout>
 
 #include "../custom_widgets/popupmenuwidget.h"
+#include "../web/search_engines/isearchengine.h"
+
+#include <memory>
+#include <vector>
 
 class AddressBarWidget : public QWidget
 {
@@ -20,6 +24,11 @@ private:
     PopupMenuWidget* search_choice_menu;
 
     QHBoxLayout* addressBar_layout;
+    std::vector<std::unique_ptr<ISearchEngine>> search_engines;
+    ISearchEngine* current_search_engine;
+
+    void setupSearchEngines();
+    bool isUrlInput(const QString& text) const;
 
 public slots:
 

@@ -10,7 +10,7 @@ public:
 
     QString createSearchURL(const QString& query) const override
     {
-        return "https:/yandex.ru/search/?text=" +
+        return "https://yandex.ru/search/?text=" +
                QUrl::toPercentEncoding(query);
     }
 
