@@ -17,6 +17,7 @@ public:
 private:
 
     QLineEdit* address_bar;
+    PopupMenuWidget* search_choice_menu;
 
     QHBoxLayout* addressBar_layout;
 

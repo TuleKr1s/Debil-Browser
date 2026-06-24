@@ -14,16 +14,18 @@ public:
     explicit PopupMenuWidget(QWidget *parent = nullptr);
 
     std::vector<QPushButton*> btn_list;
-    QVBoxLayout* popup_lay;
 
     QPushButton* createBtn(QString name);
+    QPushButton* getMainBtn();
 
-private slots:
+private:
 
-    void update();
+    QPushButton* main_btn;
+    QVBoxLayout* popup_lay;
+    QWidget* popup_menu;
 
-signals:
-    void btnCreated();
+
+    void showPopup();
 };
 
 #endif // POPUPMENUWIDGET_H
