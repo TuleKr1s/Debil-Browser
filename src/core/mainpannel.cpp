@@ -14,7 +14,6 @@ MainPannel::MainPannel(QWidget *parent)
     pannel_lay->addWidget(nav_wgt);
     pannel_lay->addWidget(address_bar);
 
-
     this->setLayout(pannel_lay);
-
+    this->setMaximumHeight(55);
 }

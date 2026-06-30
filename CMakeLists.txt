@@ -37,6 +37,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/web/search_engines/yandexsearchengine.h
         src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
         src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
+        src/web/searchengineselector.h src/web/searchengineselector.cpp
 
 
     )

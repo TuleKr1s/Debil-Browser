@@ -6,11 +6,12 @@
 #include <QPushButton>
 #include <QBoxLayout>
 
-#include "../custom_widgets/popupmenuwidget.h"
-#include "../web/search_engines/isearchengine.h"
+//#include "../custom_widgets/popupmenuwidget.h"
+//#include "../web/search_engines/isearchengine.h"
+#include "../web/searchengineselector.h"
 
-#include <memory>
-#include <vector>
+//#include <memory>
+//#include <vector>
 
 class AddressBarWidget : public QWidget
 {
@@ -21,18 +22,23 @@ public:
 private:
 
     QLineEdit* address_bar;
-    PopupMenuWidget* search_choice_menu;
+    //PopupMenuWidget* search_choice_menu;
 
     QHBoxLayout* addressBar_layout;
-    std::vector<std::unique_ptr<ISearchEngine>> search_engines;
+    //std::vector<std::unique_ptr<ISearchEngine>> search_engines;
     ISearchEngine* current_search_engine;
+    SearchEngineSelector* search_choice_menu;
 
-    void setupSearchEngines();
+    //void setupSearchEngines();
     bool isUrlInput(const QString& text) const;
 
 public slots:
 
     void onReturnPressed();
+
+private slots:
+
+    void setSearchEngine(ISearchEngine*);
 
 signals:
 

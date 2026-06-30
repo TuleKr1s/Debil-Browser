@@ -18,8 +18,9 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     main_lay->addWidget(main_pannel);
     main_lay->addWidget(viewing_window);
 
-    this->setLayout(main_lay);
 
+    this->setLayout(main_lay);
+    this->showMaximized();
 }
 
 

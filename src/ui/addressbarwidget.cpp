@@ -1,6 +1,6 @@
 #include "addressbarwidget.h"
 
-#include "../web/searchengine_factory.h"
+//#include "../web/searchengine_factory.h"
 
 #include <QRegularExpression>
 #include <QUrl>
@@ -10,13 +10,19 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 {
 
     address_bar = new QLineEdit();
-    search_choice_menu = new PopupMenuWidget(this);
+    //search_choice_menu = new PopupMenuWidget(this);
+
+
     current_search_engine = nullptr;
+    search_choice_menu = new SearchEngineSelector(this);
+    connect(search_choice_menu, &SearchEngineSelector::engineChanged,
+            this, &AddressBarWidget::setSearchEngine);
+    setSearchEngine(search_choice_menu->getCurrentSearchEngine());
 
     connect(address_bar, SIGNAL(returnPressed()),
             this, SLOT(onReturnPressed()));
 
-    setupSearchEngines();
+    //setupSearchEngines();
 
     addressBar_layout = new QHBoxLayout();
     addressBar_layout->addWidget(search_choice_menu);
@@ -27,29 +33,31 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 
 }
 
-void AddressBarWidget::setupSearchEngines()
-{
-    search_engines.push_back(SearchEngine_Factory::createGoogle());
-    search_engines.push_back(SearchEngine_Factory::createYandex());
+// void AddressBarWidget::setupSearchEngines()
+// {
 
-    for (const auto& search_engine : search_engines)
-    {
-        QPushButton* btn = search_choice_menu->createBtn(search_engine->getSearchEngineName());
-        ISearchEngine* engine = search_engine.get();
+//     search_engines.push_back(SearchEngine_Factory::createGoogle());
+//     search_engines.push_back(SearchEngine_Factory::createYandex());
 
-        connect(btn, &QPushButton::clicked, this, [this, engine]()
-        {
-            current_search_engine = engine;
-            search_choice_menu->getMainBtn()->setText(engine->getSearchEngineName());
-        });
-    }
 
-    if (!search_engines.empty())
-    {
-        current_search_engine = search_engines.front().get();
-        search_choice_menu->getMainBtn()->setText(current_search_engine->getSearchEngineName());
-    }
-}
+//     for (const auto& search_engine : search_engines)
+//     {
+//         QPushButton* btn = search_choice_menu->createBtn(search_engine->getSearchEngineName());
+//         ISearchEngine* engine = search_engine.get();
+
+//         connect(btn, &QPushButton::clicked, this, [this, engine]()
+//         {
+//             current_search_engine = engine;
+//             search_choice_menu->getMainBtn()->setText(engine->getSearchEngineName());
+//         });
+//     }
+
+//     if (!search_engines.empty())
+//     {
+//         current_search_engine = search_engines.front().get();
+//         search_choice_menu->getMainBtn()->setText(current_search_engine->getSearchEngineName());
+//     }
+// }
 
 bool AddressBarWidget::isUrlInput(const QString& text) const
 {
@@ -101,4 +109,9 @@ void AddressBarWidget::onReturnPressed()
 
     emit navigateRequested(QUrl(text));
 
+}
+
+void AddressBarWidget::setSearchEngine(ISearchEngine* search_engine)
+{
+    current_search_engine = search_engine;
 }

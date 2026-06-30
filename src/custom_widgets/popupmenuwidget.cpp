@@ -5,8 +5,10 @@ PopupMenuWidget::PopupMenuWidget(QWidget *parent)
 {
 
     QVBoxLayout* mainBtn_lay = new QVBoxLayout(this);
+    mainBtn_lay->setContentsMargins(0, 0, 0, 0);
 
     main_btn = new QPushButton("Open", this);
+    main_btn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     mainBtn_lay->addWidget(main_btn);
 
 
@@ -22,9 +24,14 @@ PopupMenuWidget::PopupMenuWidget(QWidget *parent)
 }
 
 
+QSize PopupMenuWidget::sizeHint() const
+{
+    return main_btn->sizeHint();
+}
+
 QPushButton* PopupMenuWidget::createBtn(QString name)
 {
-    QPushButton* btn = new QPushButton(name);
+    QPushButton* btn = new QPushButton(name, popup_menu);
     btn_list.push_back(btn);
 
     popup_lay->addWidget(btn);
@@ -38,6 +45,15 @@ QPushButton* PopupMenuWidget::createBtn(QString name)
 QPushButton* PopupMenuWidget::getMainBtn()
 {
     return main_btn;
+}
+
+void PopupMenuWidget::setMainBtnText(const QString& text)
+{
+    main_btn->setText(text);
+    main_btn->setMinimumSize(main_btn->sizeHint());
+    main_btn->adjustSize();
+    setMinimumSize(main_btn->sizeHint());
+    updateGeometry();
 }
 
 void PopupMenuWidget::showPopup()

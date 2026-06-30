@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QBoxLayout>
 #include <QPushButton>
+#include <QSizePolicy>
 
 #include <vector>
 
@@ -15,8 +16,10 @@ public:
 
     std::vector<QPushButton*> btn_list;
 
+    QSize sizeHint() const override;
     QPushButton* createBtn(QString name);
     QPushButton* getMainBtn();
+    void setMainBtnText(const QString& text);
 
 private:
 
