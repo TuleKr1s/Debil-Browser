@@ -6,6 +6,7 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 
     viewing_window = new BrowserView(this);
 
+    musicInit();
 
     main_pannel = new MainPannel(this);
 
@@ -39,4 +40,28 @@ void Browser_Framework::connectAddressBar()
 {
     connect(main_pannel->address_bar, SIGNAL(navigateRequested(QUrl)),
             viewing_window, SLOT(setURL(QUrl)));
+}
+
+void Browser_Framework::musicInit()
+{
+    m_player = new QMediaPlayer(this);
+    m_audio_output = new QAudioOutput(this);
+
+    m_player->setAudioOutput(m_audio_output);
+
+    m_audio_output->setVolume(1.);
+
+    m_player->setSource(QUrl("qrc:/assets/multimedia/DebilBrowser_MainTheme.mp3"));
+
+    m_player->play();
+
+    connect(m_player, &QMediaPlayer::mediaStatusChanged, this,
+            [this](QMediaPlayer::MediaStatus status)
+            {
+                if (status != QMediaPlayer::EndOfMedia)
+                    return;
+
+                m_player->setPosition(0);
+                m_player->play();
+            });
 }

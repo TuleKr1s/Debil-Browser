@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia)
 
 set(TS_FILES Debil_Browser_en_001.ts)
 
@@ -63,8 +63,20 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
+qt_add_resources(BrowserResources
+    resources.qrc
+)
+
+target_sources(Debil_Browser PRIVATE
+    ${BrowserResources}
+)
+
+
 target_link_libraries(Debil_Browser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
-                                            Qt${QT_VERSION_MAJOR}::WebEngineWidgets)
+                                            Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+                                            Qt${QT_VERSION_MAJOR}::Multimedia)
+
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -89,4 +101,31 @@ install(TARGETS Debil_Browser
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(Debil_Browser)
+endif()
+
+include(CTest)
+
+if(BUILD_TESTING)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+
+    add_executable(Debil_BrowserTests
+        src/tests/browser_components_test.cpp
+        src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
+        src/web/searchengineselector.h src/web/searchengineselector.cpp
+        src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
+        src/web/searchengine_factory.h
+        src/web/search_engines/isearchengine.h
+        src/web/search_engines/googlesearchengine.h
+        src/web/search_engines/yandexsearchengine.h
+    )
+
+    target_link_libraries(Debil_BrowserTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Test
+    )
+
+    add_test(NAME Debil_BrowserTests COMMAND Debil_BrowserTests)
+    set_tests_properties(Debil_BrowserTests PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()

@@ -3,7 +3,8 @@
 
 #include <QWidget>
 #include <QBoxLayout>
-
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 #include "browserview.h"
 #include "mainpannel.h"
@@ -29,6 +30,10 @@ private:
     void connectNavigation();
     //
     void connectAddressBar();
+
+    QMediaPlayer* m_player;
+    QAudioOutput* m_audio_output;
+    void musicInit();
 
 signals:
 };

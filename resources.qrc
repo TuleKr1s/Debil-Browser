@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/multimedia/DebilBrowser_MainTheme.mp3</file>
+    </qresource>
+</RCC>
