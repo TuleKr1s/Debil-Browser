@@ -33,31 +33,6 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 
 }
 
-// void AddressBarWidget::setupSearchEngines()
-// {
-
-//     search_engines.push_back(SearchEngine_Factory::createGoogle());
-//     search_engines.push_back(SearchEngine_Factory::createYandex());
-
-
-//     for (const auto& search_engine : search_engines)
-//     {
-//         QPushButton* btn = search_choice_menu->createBtn(search_engine->getSearchEngineName());
-//         ISearchEngine* engine = search_engine.get();
-
-//         connect(btn, &QPushButton::clicked, this, [this, engine]()
-//         {
-//             current_search_engine = engine;
-//             search_choice_menu->getMainBtn()->setText(engine->getSearchEngineName());
-//         });
-//     }
-
-//     if (!search_engines.empty())
-//     {
-//         current_search_engine = search_engines.front().get();
-//         search_choice_menu->getMainBtn()->setText(current_search_engine->getSearchEngineName());
-//     }
-// }
 
 bool AddressBarWidget::isUrlInput(const QString& text) const
 {

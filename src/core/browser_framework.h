@@ -6,9 +6,12 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 
-#include "browserview.h"
+#include "mergered_tabscontent.h"
 #include "mainpannel.h"
+#include "headerpanel.h"
 
+#include "../custom_widgets/browsertab.h"
+#include "browserview.h"
 // Core structure for whole browser
 // It connects main widgets at display and logic levels
 
@@ -20,8 +23,11 @@ public:
 
 private:
 
-    BrowserView* viewing_window;
+
+
+
     MainPannel* main_pannel;
+    HeaderPanel* header_panel;
 
 
     QVBoxLayout* main_lay;

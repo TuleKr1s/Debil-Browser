@@ -22,6 +22,7 @@ public:
 
 private:
 
+    int widget_height = 55;
 
 
     QHBoxLayout* pannel_lay;

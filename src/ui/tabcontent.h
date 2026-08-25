@@ -1,0 +1,27 @@
+#ifndef TABCONTENT_H
+#define TABCONTENT_H
+
+#include <QWidget>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+
+#include "../core/browserview.h"
+
+class TabContent : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit TabContent(QWidget *parent = nullptr);
+
+    void addView(BrowserView* view);
+    void removeView(BrowserView* view);
+    void showView(BrowserView* view);
+
+private:
+
+    QStackedWidget* m_stackedView;
+
+    QVBoxLayout* content_lay;
+};
+
+#endif // TABCONTENT_H

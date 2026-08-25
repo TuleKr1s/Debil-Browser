@@ -3,7 +3,7 @@
 BrowserView::BrowserView(QWidget* parent)
 {
 
-    setUrl(QUrl("https://www.google.com"));
+
 
 }
 
@@ -11,6 +11,11 @@ BrowserView::BrowserView(QWidget* parent)
 void BrowserView::setURL(const QUrl& url)
 {
     this->load(url);
+}
+
+QUrl BrowserView::getURL()
+{
+    return this->url();
 }
 
 // implementation of button functionality

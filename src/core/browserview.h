@@ -23,6 +23,7 @@ public slots:
     void reloadPage();
     // ============
     void setURL(const QUrl& url);
+    QUrl getURL();
 };
 
 #endif // HOMEPAGE_H

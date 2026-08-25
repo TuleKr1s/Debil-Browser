@@ -38,6 +38,15 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
         src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
         src/web/searchengineselector.h src/web/searchengineselector.cpp
+        src/core/headerpanel.h src/core/headerpanel.cpp
+
+
+
+        src/core/tabmanager.h src/core/tabmanager.cpp
+        src/custom_widgets/browsertab.h src/custom_widgets/browsertab.cpp
+        src/ui/tabcontent.h src/ui/tabcontent.cpp
+        src/core/mergered_tabscontent.h src/core/mergered_tabscontent.cpp
+
 
 
     )
