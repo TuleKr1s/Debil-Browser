@@ -10,6 +10,7 @@
 #include "../custom_widgets/browsertab.h"
 #include "browserview.h"
 #include "../ui/tabcontent.h"
+#include "../ui/windowbar.h"
 
 class TabManager : public QWidget
 {
@@ -27,6 +28,8 @@ private:
     QTabBar* m_tabBar;
     QToolButton* m_newTabButton;
     TabContent* m_tabContent;
+
+    WindowBar* m_windowBar;
 
     QVector<BrowserTab*> m_tabs;
 

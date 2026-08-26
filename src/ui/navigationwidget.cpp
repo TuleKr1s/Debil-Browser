@@ -8,9 +8,9 @@ NavigationWidget::NavigationWidget(QWidget *parent)
     forward_btn = new QPushButton(this);
     reload_btn = new QPushButton(this);
 
-    back_btn->setIcon(QIcon("../../assets/left_arrow.png"));
-    forward_btn->setIcon(QIcon("../../assets/right_arrow.png"));
-    reload_btn->setIcon(QIcon("../../assets/refresh.png"));
+    back_btn->setIcon(QIcon(":/assets/left_arrow.png"));
+    forward_btn->setIcon(QIcon(":/assets/right_arrow.png"));
+    reload_btn->setIcon(QIcon(":/assets/refresh.png"));
 
     back_btn->setFixedSize(QSize(25,25));
     forward_btn->setFixedSize(QSize(25,25));

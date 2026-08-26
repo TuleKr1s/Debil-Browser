@@ -20,12 +20,18 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
                                   "             border: 1px solid #C8C8C8;}\
                                    QToolButton:hover {background-color: #D0D0D0;}");
 
+
+    m_windowBar = new WindowBar(this);
+
+
     tabManager_lay = new QHBoxLayout(this);
     tabManager_lay->setContentsMargins(0,0,0,0);
     tabManager_lay->setSpacing(0);
 
     tabManager_lay->addWidget(m_tabBar);
     tabManager_lay->addWidget(m_newTabButton);
+    tabManager_lay->addStretch(1);
+    tabManager_lay->addWidget(m_windowBar);
 
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabManager::onCurrentTabChanged);

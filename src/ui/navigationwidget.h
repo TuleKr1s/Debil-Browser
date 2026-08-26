@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QBoxLayout>
+#include <QUrl>
 
 // Widget with basic buttons for interacting with page
 // Widget is purely visual, without implementing any button logic

@@ -5,6 +5,7 @@
 #include <QBoxLayout>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QEvent>
 
 #include "mergered_tabscontent.h"
 #include "mainpannel.h"
@@ -41,7 +42,14 @@ private:
     QAudioOutput* m_audio_output;
     void musicInit();
 
+protected:
+
+    //void changeEvent(QEvent* event);
+
 signals:
+
+    //void windowStateChanged(bool maximized);
+
 };
 
 #endif // BROWSER_FRAMEWORK_H

@@ -82,3 +82,23 @@ void Browser_Framework::musicInit()
                 m_player->play();
             });
 }
+
+
+// void Browser_Framework::changeEvent(QEvent* event)
+// {
+//     if (event->type() == QEvent::WindowStateChange)
+//     {
+//         emit windowStateChanged(this->isMaximized());
+//     }
+
+//     QWidget::changeEvent(event);
+// }
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,13 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/multimedia/DebilBrowser_MainTheme.mp3</file>
+        <file>assets/close_btn.png</file>
+        <file>assets/full_window_btn.png</file>
+        <file>assets/half_window_btn.png</file>
+        <file>assets/left_arrow.png</file>
+        <file>assets/menu_btn.png</file>
+        <file>assets/minimize_btn.png</file>
+        <file>assets/refresh.png</file>
+        <file>assets/right_arrow.png</file>
     </qresource>
 </RCC>

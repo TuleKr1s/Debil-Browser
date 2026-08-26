@@ -46,6 +46,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/custom_widgets/browsertab.h src/custom_widgets/browsertab.cpp
         src/ui/tabcontent.h src/ui/tabcontent.cpp
         src/core/mergered_tabscontent.h src/core/mergered_tabscontent.cpp
+        src/ui/windowbar.h src/ui/windowbar.cpp
 
 
 

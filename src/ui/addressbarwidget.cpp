@@ -29,6 +29,8 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
     addressBar_layout->addWidget(address_bar);
 
 
+
+    this->setMinimumWidth(1000); // !!!!!!!!! replace with a more flexible version
     this->setLayout(addressBar_layout);
 
 }
