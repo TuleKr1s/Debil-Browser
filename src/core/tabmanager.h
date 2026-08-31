@@ -3,14 +3,17 @@
 
 #include <QWidget>
 #include <QTabBar>
-#include <QVector>
 #include <QHBoxLayout>
 #include <QToolButton>
+#include <memory>
+#include <vector>
 
-#include "../custom_widgets/browsertab.h"
+#include "../custom_widgets/apptabs_factory.h"
 #include "browserview.h"
 #include "../ui/tabcontent.h"
 #include "../ui/windowbar.h"
+
+
 
 class TabManager : public QWidget
 {
@@ -21,7 +24,7 @@ public:
     void createTab(const QUrl& url);
     void closeTab(int index);
 
-    BrowserTab* currentTab() const;
+    IAppTabs* currentTab() const;
 
 private:
 
@@ -31,7 +34,7 @@ private:
 
     WindowBar* m_windowBar;
 
-    QVector<BrowserTab*> m_tabs;
+    std::vector<std::unique_ptr<IAppTabs>> m_tabs;
 
     QHBoxLayout* tabManager_lay;
 

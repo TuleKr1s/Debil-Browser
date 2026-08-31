@@ -43,10 +43,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
 
         src/core/tabmanager.h src/core/tabmanager.cpp
-        src/custom_widgets/browsertab.h src/custom_widgets/browsertab.cpp
+        src/custom_widgets/webtab.h src/custom_widgets/webtab.cpp
         src/ui/tabcontent.h src/ui/tabcontent.cpp
         src/core/mergered_tabscontent.h src/core/mergered_tabscontent.cpp
         src/ui/windowbar.h src/ui/windowbar.cpp
+        src/custom_widgets/homepagetab.h src/custom_widgets/homepagetab.cpp
+        src/custom_widgets/iapptabs.h
+        src/custom_widgets/apptabs_factory.h
 
 
 

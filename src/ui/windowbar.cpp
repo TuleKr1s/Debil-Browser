@@ -75,19 +75,6 @@ void WindowBar::onFullWindowBtnClicked()
 }
 
 
-void WindowBar::changeEvent(QEvent* event)
-{
-    if (event->type() == QEvent::WindowStateChange)
-    {
-        if (window()->isMaximized())
-            m_fullWindowBtn->setIcon(QIcon(":/assets/full_window_btn.png"));
-        else
-            m_fullWindowBtn->setIcon(QIcon(":/assets/half_window_btn.png"));
-    }
-
-    QWidget::changeEvent(event);
-}
-
 
 
 

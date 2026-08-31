@@ -11,7 +11,7 @@
 #include "mainpannel.h"
 #include "headerpanel.h"
 
-#include "../custom_widgets/browsertab.h"
+#include "../custom_widgets/apptabs_factory.h"
 #include "browserview.h"
 // Core structure for whole browser
 // It connects main widgets at display and logic levels

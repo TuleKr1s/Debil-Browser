@@ -37,7 +37,7 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabManager::onCurrentTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabManager::onTabCloseRequested);
     connect(m_newTabButton, &QToolButton::clicked, this, [this]() {
-        createTab(QUrl("https://www.google.com"));
+        this->createTab(QUrl("https://www.google.com"));
     });
 
 
@@ -52,62 +52,59 @@ void TabManager::createTab(const QUrl& url)
 
     view->setURL(url);
 
+    auto tab = AppTabs_Factory::createWebTab(view, "New Tab");
 
-    BrowserTab* tab = new BrowserTab(view, "New Tab");
-
-    m_tabs.append(tab);
+    const QString title = tab->title();
+    m_tabs.push_back(std::move(tab));
 
     m_tabContent->addView(view);
 
-    int index = m_tabBar->addTab(tab->title());
+    int index = m_tabBar->addTab(title);
 
 
     m_tabBar->setCurrentIndex(index);
 
 }
 
-
 void TabManager::closeTab(int index)
 {
-    if (index < 0 || index >= m_tabs.size())
+    if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return;
 
-    BrowserTab* tab = m_tabs[index];
+    IAppTabs* tab = m_tabs[index].get();
 
     BrowserView* view = tab->view();
 
     m_tabContent->removeView(view);
 
-    m_tabs.removeAt(index);
-
-    delete tab;
+    m_tabs.erase(m_tabs.begin() + index);
 
     m_tabBar->removeTab(index);
 
-    if (m_tabs.isEmpty())
+    if (m_tabs.empty())
     {
         this->createTab(QUrl("https://www.google.com"));
     }
 }
 
-BrowserTab* TabManager::currentTab() const
+IAppTabs* TabManager::currentTab() const
 {
     int index = m_tabBar->currentIndex();
 
-    if (index < 0 || index >= m_tabs.size())
+    if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return nullptr;
 
-    return m_tabs[index];
+    return m_tabs[index].get();
 }
 
 
 void TabManager::onCurrentTabChanged(int index)
 {
-    if (index < 0 || index >= m_tabs.size())
+    if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return;
 
 
-    BrowserTab* tab = m_tabs[index];
+    IAppTabs* tab = m_tabs[index].get();
 
     m_tabContent->showView(tab->view());
 }
@@ -116,7 +113,6 @@ void TabManager::onTabCloseRequested(int index)
 {
     this->closeTab(index);
 }
-
 
 
 

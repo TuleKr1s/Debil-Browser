@@ -5,24 +5,24 @@
 #include <QUrl>
 
 #include "../core/browserview.h"
+#include "iapptabs.h"
 
-class BrowserTab
+class WebTab : public IAppTabs
 {
 public:
-    BrowserTab(BrowserView* view, const QString& title = "New tab");
+    WebTab(BrowserView* view, const QString& title = "New tab");
 
-
-    BrowserView* view() const
+    BrowserView* view() const override
     {
         return m_view;
     }
 
-    QString title() const
+    QString title() const override
     {
         return m_title;
     }
 
-    void setTitle(const QString& title)
+    void setTitle(const QString& title) override
     {
         m_title = title;
     }
