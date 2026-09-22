@@ -37,11 +37,13 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabManager::onCurrentTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabManager::onTabCloseRequested);
     connect(m_newTabButton, &QToolButton::clicked, this, [this]() {
-        this->createTab(QUrl("https://www.google.com"));
+        //this->createTab(QUrl("https://www.google.com"));
+        this->createTab(HomePageTab);
     });
 
 
-    this->createTab(QUrl("https://www.google.com"));
+    //this->createTab(QUrl("https://www.google.com"));
+    this->createTab(HomePageTab);
 }
 
 
@@ -66,16 +68,48 @@ void TabManager::createTab(const QUrl& url)
 
 }
 
+void TabManager::createTab(const TabType tab_type)
+{
+
+    std::unique_ptr<IAppTabs> tab;
+
+
+    switch(tab_type)
+    {
+    case HomePageTab:
+        tab = AppTabs_Factory::createHomePage();
+        break;
+    default:
+        break;
+    }
+
+    QString title = tab->title();
+
+
+    m_tabContent->addView(tab->widget());
+
+    int index = m_tabBar->addTab(title);
+
+    m_tabBar->setCurrentIndex(index);
+
+    m_tabs.push_back(std::move(tab));
+}
+
 void TabManager::closeTab(int index)
 {
+
+
     if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return;
 
     IAppTabs* tab = m_tabs[index].get();
 
-    BrowserView* view = tab->view();
+    if (tab->view() != nullptr) {
+        BrowserView* view = tab->view();
 
-    m_tabContent->removeView(view);
+        m_tabContent->removeView(view);
+
+    }
 
     m_tabs.erase(m_tabs.begin() + index);
 
@@ -83,7 +117,7 @@ void TabManager::closeTab(int index)
 
     if (m_tabs.empty())
     {
-        this->createTab(QUrl("https://www.google.com"));
+        this->createTab(HomePageTab);
     }
 }
 
@@ -106,7 +140,10 @@ void TabManager::onCurrentTabChanged(int index)
 
     IAppTabs* tab = m_tabs[index].get();
 
-    m_tabContent->showView(tab->view());
+    if (tab->view() != nullptr)
+        m_tabContent->showView(tab->view());
+    else
+        m_tabContent->showView(tab->widget());
 }
 
 void TabManager::onTabCloseRequested(int index)

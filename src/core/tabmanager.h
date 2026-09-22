@@ -13,7 +13,10 @@
 #include "../ui/tabcontent.h"
 #include "../ui/windowbar.h"
 
-
+enum TabType {
+    WebTab,
+    HomePageTab
+};
 
 class TabManager : public QWidget
 {
@@ -22,6 +25,8 @@ public:
     explicit TabManager(TabContent* tab_content, QWidget *parent = nullptr);
 
     void createTab(const QUrl& url);
+    void createTab(const TabType tab_type);
+
     void closeTab(int index);
 
     IAppTabs* currentTab() const;

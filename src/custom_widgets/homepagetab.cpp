@@ -11,6 +11,11 @@ HomePageTab::HomePageTab(QWidget *parent)
     this->setLayout(homepage_lay);
 }
 
+QWidget* HomePageTab::widget()
+{
+    return this;
+}
+
 QString HomePageTab::title() const
 {
     return m_title;

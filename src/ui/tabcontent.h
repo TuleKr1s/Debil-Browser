@@ -13,9 +13,11 @@ class TabContent : public QWidget
 public:
     explicit TabContent(QWidget *parent = nullptr);
 
-    void addView(BrowserView* view);
-    void removeView(BrowserView* view);
-    void showView(BrowserView* view);
+    void addView(QWidget* view);
+    void removeView(QWidget* view);
+    void showView(QWidget* view);
+
+
 
 private:
 

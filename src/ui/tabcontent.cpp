@@ -19,19 +19,19 @@ TabContent::TabContent(QWidget *parent)
 }
 
 
-void TabContent::addView(BrowserView* view)
+void TabContent::addView(QWidget* view)
 {
     m_stackedView->addWidget(view);
 }
 
-void TabContent::removeView(BrowserView* view)
+void TabContent::removeView(QWidget* view)
 {
     m_stackedView->removeWidget(view);
 
     delete view;
 }
 
-void TabContent::showView(BrowserView* view)
+void TabContent::showView(QWidget* view)
 {
     m_stackedView->setCurrentWidget(view);
 }

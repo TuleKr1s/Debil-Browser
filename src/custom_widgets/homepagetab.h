@@ -13,13 +13,14 @@ class HomePageTab : public QWidget, public IAppTabs
 public:
     explicit HomePageTab(QWidget *parent = nullptr);
 
+    QWidget* widget() override;
     QString title() const override;
     void setTitle(const QString& title) override;
 
 private:
 
     QGridLayout* homepage_lay;
-    QString m_title {"Home"};
+    QString m_title {"Home Page"};
 
 };
 

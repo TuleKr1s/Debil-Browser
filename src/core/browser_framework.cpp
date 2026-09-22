@@ -38,7 +38,9 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 void Browser_Framework::connectNavigation()
 {
 
+
     IAppTabs *tab = Mergered_TabsContent::getTabManager()->currentTab();
+    if (tab->view() == nullptr) return;
     BrowserView *view = tab->view();
 
     connect(main_pannel->nav_wgt->back_btn, SIGNAL(clicked()),
@@ -53,6 +55,7 @@ void Browser_Framework::connectAddressBar()
 {
 
     IAppTabs *tab = Mergered_TabsContent::getTabManager()->currentTab();
+    if (tab->view() == nullptr) return;
     BrowserView *view = tab->view();
 
     connect(main_pannel->address_bar, SIGNAL(navigateRequested(QUrl)),
