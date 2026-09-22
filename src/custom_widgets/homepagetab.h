@@ -2,10 +2,13 @@
 #define HOMEPAGE_H
 
 #include <QWidget>
-#include <QGridLayout>
+#include <QStackedLayout>
 #include <QString>
+#include <QEvent>
+#include <QStackedWidget>
 
 #include "iapptabs.h"
+#include "bghomepage.h"
 
 class HomePageTab : public QWidget, public IAppTabs
 {
@@ -19,8 +22,21 @@ public:
 
 private:
 
-    QGridLayout* homepage_lay;
+    QStackedLayout* homepage_lay;
+    BGHomePage* m_backgroundMedia;
+
     QString m_title {"Home Page"};
+
+    void connectToStack();
+    bool m_connectedToStack = false;
+
+    void installWindowFilter();
+    QWidget* m_browserWindow = nullptr;
+
+protected:
+    bool event(QEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 };
 

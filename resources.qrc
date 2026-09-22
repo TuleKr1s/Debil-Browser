@@ -9,5 +9,6 @@
         <file>assets/minimize_btn.png</file>
         <file>assets/refresh.png</file>
         <file>assets/right_arrow.png</file>
+        <file>assets/multimedia/DebilBrowser_MainTheme.mp4</file>
     </qresource>
 </RCC>

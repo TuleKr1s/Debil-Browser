@@ -7,6 +7,8 @@
 
 #include "../core/browserview.h"
 
+
+
 class TabContent : public QWidget
 {
     Q_OBJECT
@@ -17,7 +19,7 @@ public:
     void removeView(QWidget* view);
     void showView(QWidget* view);
 
-
+    void moveView(int from, int to);
 
 private:
 

@@ -5,8 +5,10 @@
 #include <QTabBar>
 #include <QHBoxLayout>
 #include <QToolButton>
+
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 #include "../custom_widgets/apptabs_factory.h"
 #include "browserview.h"
@@ -47,6 +49,7 @@ private slots:
 
     void onCurrentTabChanged(int index);
     void onTabCloseRequested(int index);
+    void onTabMoved(int from, int to);
 
 };
 

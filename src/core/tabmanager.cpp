@@ -41,6 +41,8 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
         this->createTab(HomePageTab);
     });
 
+    connect(m_tabBar, &QTabBar::tabMoved,
+            this, &TabManager::onTabMoved);
 
     //this->createTab(QUrl("https://www.google.com"));
     this->createTab(HomePageTab);
@@ -90,9 +92,11 @@ void TabManager::createTab(const TabType tab_type)
 
     int index = m_tabBar->addTab(title);
 
+    m_tabs.push_back(std::move(tab));
+
     m_tabBar->setCurrentIndex(index);
 
-    m_tabs.push_back(std::move(tab));
+
 }
 
 void TabManager::closeTab(int index)
@@ -152,7 +156,24 @@ void TabManager::onTabCloseRequested(int index)
 }
 
 
+void TabManager::onTabMoved(int from, int to)
+{
+    if (from == to)
+        return;
 
+
+    if (from < to) {
+        std::rotate(m_tabs.begin() + from,
+                    m_tabs.begin() + from + 1,
+                    m_tabs.begin() + to + 1);
+    } else {
+        std::rotate(m_tabs.begin() + to,
+                    m_tabs.begin() + from,
+                    m_tabs.begin() + from + 1);
+    }
+
+    m_tabContent->moveView(from, to);
+}
 
 
 

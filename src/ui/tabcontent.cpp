@@ -35,3 +35,17 @@ void TabContent::showView(QWidget* view)
 {
     m_stackedView->setCurrentWidget(view);
 }
+
+void TabContent::moveView(int from, int to)
+{
+    if (from == to)
+        return;
+
+    QWidget* currentView = m_stackedView->currentWidget();
+    QWidget* movedView = m_stackedView->widget(from);
+
+    m_stackedView->removeWidget(movedView);
+    m_stackedView->insertWidget(to, movedView);
+
+    m_stackedView->setCurrentWidget(currentView);
+}

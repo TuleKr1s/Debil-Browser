@@ -50,6 +50,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/custom_widgets/homepagetab.h src/custom_widgets/homepagetab.cpp
         src/custom_widgets/iapptabs.h
         src/custom_widgets/apptabs_factory.h
+        src/custom_widgets/bghomepage.h src/custom_widgets/bghomepage.cpp
 
 
 
