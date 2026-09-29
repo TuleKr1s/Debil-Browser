@@ -10,14 +10,14 @@
 #include <vector>
 #include <algorithm>
 
-#include "../custom_widgets/apptabs_factory.h"
+#include "apptabs_factory.h"
 #include "browserview.h"
-#include "../ui/tabcontent.h"
-#include "../ui/windowbar.h"
+#include "tabcontent.h"
+#include "../../ui/windowbar.h"
 
 enum TabType {
     WebTab,
-    HomePageTab
+    HomePage
 };
 
 class TabManager : public QWidget

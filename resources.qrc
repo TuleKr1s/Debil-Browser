@@ -10,5 +10,6 @@
         <file>assets/refresh.png</file>
         <file>assets/right_arrow.png</file>
         <file>assets/multimedia/DebilBrowser_MainTheme.mp4</file>
+        <file>css/ClockWidget.css</file>
     </qresource>
 </RCC>

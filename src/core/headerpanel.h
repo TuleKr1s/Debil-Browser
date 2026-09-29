@@ -5,7 +5,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-#include "mergered_tabscontent.h"
+#include "../custom_widgets/Tabs/mergered_tabscontent.h"
 
 class HeaderPanel : public QWidget
 {

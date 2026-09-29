@@ -39,7 +39,7 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabManager::onTabCloseRequested);
     connect(m_newTabButton, &QToolButton::clicked, this, [this]() {
         //this->createTab(QUrl("https://www.google.com"));
-        //this->createTab(HomePageTab);
+        //this->createTab(HomePage);
         this->onNewTabClicked();
     });
 
@@ -47,7 +47,7 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
             this, &TabManager::onTabMoved);
 
     //this->createTab(QUrl("https://www.google.com"));
-    this->createTab(HomePageTab);
+    this->createTab(HomePage);
 }
 
 
@@ -83,7 +83,7 @@ void TabManager::createTab(const TabType tab_type)
 
     switch(tab_type)
     {
-    case HomePageTab:
+    case HomePage:
         tab = AppTabs_Factory::createHomePage();
 
         break;
@@ -102,7 +102,7 @@ void TabManager::createTab(const TabType tab_type)
 
     m_tabBar->setCurrentIndex(index);
 
-    if (tab_type == HomePageTab)
+    if (tab_type == HomePage)
         m_tabBar->setTabVisible(index, false);
 
     updateTabBarWidth();
@@ -138,7 +138,7 @@ void TabManager::closeTab(int index)
 
     if (m_tabs.empty())
     {
-        this->createTab(HomePageTab);
+        this->createTab(HomePage);
     }
 }
 

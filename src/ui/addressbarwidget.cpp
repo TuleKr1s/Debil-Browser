@@ -10,7 +10,6 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 {
 
     address_bar = new QLineEdit();
-    //search_choice_menu = new PopupMenuWidget(this);
 
 
     current_search_engine = nullptr;
@@ -22,7 +21,6 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
     connect(address_bar, SIGNAL(returnPressed()),
             this, SLOT(onReturnPressed()));
 
-    //setupSearchEngines();
 
     addressBar_layout = new QHBoxLayout();
     addressBar_layout->addWidget(search_choice_menu);
@@ -92,3 +90,23 @@ void AddressBarWidget::setSearchEngine(ISearchEngine* search_engine)
 {
     current_search_engine = search_engine;
 }
+
+void AddressBarWidget::setSearchBtnVisible(bool flag)
+{
+    if (flag)
+        search_choice_menu->show();
+    else
+        search_choice_menu->hide();
+}
+
+
+
+
+
+
+
+
+
+
+
+

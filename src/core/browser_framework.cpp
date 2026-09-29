@@ -55,8 +55,17 @@ void Browser_Framework::connectNavigation()
 void Browser_Framework::connectAddressBar()
 {
 
+    // connecting address bar from main panel
     connect(main_pannel->address_bar, &AddressBarWidget::navigateRequested,
             this, &Browser_Framework::updateAddressBar);
+
+    // connecting address bar from home page
+    auto* homePage = dynamic_cast<HomePageTab*>(m_tab_manager->currentTab());
+    if (homePage)
+    {
+        connect(homePage->addressBar(), &AddressBarWidget::navigateRequested,
+                this, &Browser_Framework::updateAddressBar);
+    }
 
 }
 

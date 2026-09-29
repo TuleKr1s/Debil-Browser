@@ -3,7 +3,7 @@
 
 #include <QString>
 
-#include "../core/browserview.h"
+#include "browserview.h"
 
 class IAppTabs
 {

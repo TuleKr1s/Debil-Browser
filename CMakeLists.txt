@@ -26,7 +26,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         src/main.cpp
-        src/core/browserview.h src/core/browserview.cpp
         src/core/mainpannel.h src/core/mainpannel.cpp
 
         src/core/browser_framework.h src/core/browser_framework.cpp
@@ -42,15 +41,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
 
 
-        src/core/tabmanager.h src/core/tabmanager.cpp
-        src/custom_widgets/webtab.h src/custom_widgets/webtab.cpp
-        src/ui/tabcontent.h src/ui/tabcontent.cpp
-        src/core/mergered_tabscontent.h src/core/mergered_tabscontent.cpp
+        src/custom_widgets/Tabs/tabmanager.h src/custom_widgets/Tabs/tabmanager.cpp
+        src/custom_widgets/Tabs/webtab.h src/custom_widgets/Tabs/webtab.cpp
+        src/custom_widgets/Tabs/tabcontent.h src/custom_widgets/Tabs/tabcontent.cpp
+        src/custom_widgets/Tabs/mergered_tabscontent.h src/custom_widgets/Tabs/mergered_tabscontent.cpp
         src/ui/windowbar.h src/ui/windowbar.cpp
-        src/custom_widgets/homepagetab.h src/custom_widgets/homepagetab.cpp
-        src/custom_widgets/iapptabs.h
-        src/custom_widgets/apptabs_factory.h
-        src/custom_widgets/bghomepage.h src/custom_widgets/bghomepage.cpp
+        src/custom_widgets/Tabs/homepagetab.h src/custom_widgets/Tabs/homepagetab.cpp
+        src/custom_widgets/Tabs/iapptabs.h
+        src/custom_widgets/Tabs/apptabs_factory.h
+        src/custom_widgets/Tabs/bghomepage.h src/custom_widgets/Tabs/bghomepage.cpp
+        src/custom_widgets/Tabs/browserview.h src/custom_widgets/Tabs/browserview.cpp
+        src/custom_widgets/Tabs/homepagewidgets.h src/custom_widgets/Tabs/homepagewidgets.cpp
+        src/custom_widgets/clockwidget.h src/custom_widgets/clockwidget.cpp
+
 
 
 

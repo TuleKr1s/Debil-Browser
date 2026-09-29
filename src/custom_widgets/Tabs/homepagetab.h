@@ -8,7 +8,9 @@
 #include <QStackedWidget>
 
 #include "iapptabs.h"
+
 #include "bghomepage.h"
+#include "homepagewidgets.h"
 
 class HomePageTab : public QWidget, public IAppTabs
 {
@@ -19,11 +21,13 @@ public:
     QWidget* widget() override;
     QString title() const override;
     void setTitle(const QString& title) override;
+    AddressBarWidget* addressBar() const;
 
 private:
 
     QStackedLayout* homepage_lay;
     BGHomePage* m_backgroundMedia;
+    HomePageWidgets* m_homepage_widgets;
 
     QString m_title {"Home Page"};
 

@@ -7,12 +7,12 @@
 #include <QAudioOutput>
 #include <QEvent>
 
-#include "mergered_tabscontent.h"
+#include "../custom_widgets/Tabs/mergered_tabscontent.h"
 #include "mainpannel.h"
 #include "headerpanel.h"
 
-#include "../custom_widgets/apptabs_factory.h"
-#include "browserview.h"
+#include "../custom_widgets/Tabs/apptabs_factory.h"
+#include "../custom_widgets/Tabs/browserview.h"
 // Core structure for whole browser
 // It connects main widgets at display and logic levels
 

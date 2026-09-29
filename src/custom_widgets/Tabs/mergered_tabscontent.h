@@ -4,7 +4,7 @@
 #include <QObject>
 
 #include "tabmanager.h"
-#include "../ui/tabcontent.h"
+#include "tabcontent.h"
 
 class Mergered_TabsContent : public QObject
 {

@@ -4,7 +4,7 @@
 #include <QString>
 #include <QUrl>
 
-#include "../core/browserview.h"
+#include "browserview.h"
 #include "iapptabs.h"
 
 class WebTab : public IAppTabs

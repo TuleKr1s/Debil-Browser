@@ -1,4 +1,4 @@
-#include "BrowserView.h"
+#include "browserview.h"
 
 BrowserView::BrowserView(QWidget* parent)
     : QWebEngineView(parent)

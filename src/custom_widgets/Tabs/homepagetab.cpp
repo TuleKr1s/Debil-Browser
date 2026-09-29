@@ -5,14 +5,16 @@ HomePageTab::HomePageTab(QWidget *parent)
 {
 
     m_backgroundMedia = new BGHomePage(this);
-
     m_backgroundMedia->setVideo("qrc:/assets/multimedia/DebilBrowser_MainTheme.mp4");
 
+    m_homepage_widgets = new HomePageWidgets(this);
 
     homepage_lay = new QStackedLayout(this);
     homepage_lay->setStackingMode(QStackedLayout::StackAll);
 
     homepage_lay->addWidget(m_backgroundMedia);
+    homepage_lay->addWidget(m_homepage_widgets);
+    homepage_lay->setCurrentWidget(m_homepage_widgets);
 
 
     this->setLayout(homepage_lay);
@@ -103,4 +105,9 @@ void HomePageTab::installWindowFilter()
 
     m_browserWindow = newWindow;
     m_browserWindow->installEventFilter(this);
+}
+
+AddressBarWidget* HomePageTab::addressBar() const
+{
+    return m_homepage_widgets->m_addressbar_widget;
 }

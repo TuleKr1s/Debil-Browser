@@ -5,7 +5,7 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 
-#include "../core/browserview.h"
+#include "browserview.h"
 
 
 
