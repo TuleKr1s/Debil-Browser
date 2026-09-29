@@ -11,6 +11,7 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     m_tabBar->setExpanding(false);
     m_tabBar->setElideMode(Qt::ElideRight);
 
+
     m_newTabButton = new QToolButton(this);
     m_newTabButton->setText("+");
     m_newTabButton->setToolTip(tr("New tab"));
@@ -38,7 +39,8 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabManager::onTabCloseRequested);
     connect(m_newTabButton, &QToolButton::clicked, this, [this]() {
         //this->createTab(QUrl("https://www.google.com"));
-        this->createTab(HomePageTab);
+        //this->createTab(HomePageTab);
+        this->onNewTabClicked();
     });
 
     connect(m_tabBar, &QTabBar::tabMoved,
@@ -52,7 +54,9 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
 void TabManager::createTab(const QUrl& url)
 {
 
-    BrowserView* view = new BrowserView();
+    qDebug() << "creating tab";
+    BrowserView* view = new BrowserView(m_tabContent);
+    m_tabContent->addView(view);
 
     view->setURL(url);
 
@@ -61,12 +65,13 @@ void TabManager::createTab(const QUrl& url)
     const QString title = tab->title();
     m_tabs.push_back(std::move(tab));
 
-    m_tabContent->addView(view);
+
 
     int index = m_tabBar->addTab(title);
 
 
     m_tabBar->setCurrentIndex(index);
+    updateTabBarWidth();
 
 }
 
@@ -80,6 +85,7 @@ void TabManager::createTab(const TabType tab_type)
     {
     case HomePageTab:
         tab = AppTabs_Factory::createHomePage();
+
         break;
     default:
         break;
@@ -96,7 +102,17 @@ void TabManager::createTab(const TabType tab_type)
 
     m_tabBar->setCurrentIndex(index);
 
+    if (tab_type == HomePageTab)
+        m_tabBar->setTabVisible(index, false);
 
+    updateTabBarWidth();
+
+
+}
+
+void TabManager::onNewTabClicked()
+{
+    this->onCurrentTabChanged(0);
 }
 
 void TabManager::closeTab(int index)
@@ -118,11 +134,17 @@ void TabManager::closeTab(int index)
     m_tabs.erase(m_tabs.begin() + index);
 
     m_tabBar->removeTab(index);
+    updateTabBarWidth();
 
     if (m_tabs.empty())
     {
         this->createTab(HomePageTab);
     }
+}
+
+void TabManager::updateTabBarWidth()
+{
+    m_tabBar->setMaximumWidth(m_tabBar->sizeHint().width());
 }
 
 IAppTabs* TabManager::currentTab() const
@@ -141,13 +163,15 @@ void TabManager::onCurrentTabChanged(int index)
     if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return;
 
-
+    m_tabBar->setCurrentIndex(index);
     IAppTabs* tab = m_tabs[index].get();
 
     if (tab->view() != nullptr)
         m_tabContent->showView(tab->view());
     else
         m_tabContent->showView(tab->widget());
+
+    emit currentTabChanged(index);
 }
 
 void TabManager::onTabCloseRequested(int index)

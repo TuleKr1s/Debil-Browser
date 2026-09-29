@@ -45,11 +45,18 @@ private:
 
     QHBoxLayout* tabManager_lay;
 
+    void updateTabBarWidth();
+
 private slots:
 
     void onCurrentTabChanged(int index);
     void onTabCloseRequested(int index);
     void onTabMoved(int from, int to);
+    void onNewTabClicked();
+
+signals:
+
+    void currentTabChanged(int index);
 
 };
 

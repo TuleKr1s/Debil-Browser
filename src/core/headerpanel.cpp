@@ -8,7 +8,7 @@ HeaderPanel::HeaderPanel(QWidget *parent)
 
 
     header_lay = new QHBoxLayout(this);
-    header_lay->setContentsMargins(0, 0, 0, 0);
+    header_lay->setContentsMargins(9, 0, 9, 0);
     header_lay->setSpacing(0);
     header_lay->addWidget(Mergered_TabsContent::getTabManager());
 

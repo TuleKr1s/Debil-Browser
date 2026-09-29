@@ -25,7 +25,7 @@ public:
 private:
 
 
-
+    TabManager* m_tab_manager;
 
     MainPannel* main_pannel;
     HeaderPanel* header_panel;
@@ -38,17 +38,9 @@ private:
     //
     void connectAddressBar();
 
-    QMediaPlayer* m_player;
-    QAudioOutput* m_audio_output;
-    void musicInit();
+    // updating address bar behavior based on current tab
+    void updateAddressBar(const QUrl& url);
 
-protected:
-
-    //void changeEvent(QEvent* event);
-
-signals:
-
-    //void windowStateChanged(bool maximized);
 
 };
 

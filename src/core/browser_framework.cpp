@@ -6,9 +6,8 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 
     static Mergered_TabsContent mergered_Tabs;
 
-    //viewing_window = new BrowserView(this);
+    m_tab_manager = mergered_Tabs.getTabManager();
 
-    //musicInit();
 
     // panel with address bar, navigations, extensions
     main_pannel = new MainPannel(this);
@@ -23,9 +22,11 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 
 
     main_lay = new QVBoxLayout(this);
+    main_lay->setContentsMargins(0, 0, 0, 0);
+    main_lay->setSpacing(0);
+
     main_lay->addWidget(header_panel);
     main_lay->addWidget(main_pannel);
-    //main_lay->addWidget(viewing_window);
     main_lay->addWidget(Mergered_TabsContent::getTabContent());
 
 
@@ -39,7 +40,7 @@ void Browser_Framework::connectNavigation()
 {
 
 
-    IAppTabs *tab = Mergered_TabsContent::getTabManager()->currentTab();
+    IAppTabs *tab = m_tab_manager->currentTab();
     if (tab->view() == nullptr) return;
     BrowserView *view = tab->view();
 
@@ -54,54 +55,23 @@ void Browser_Framework::connectNavigation()
 void Browser_Framework::connectAddressBar()
 {
 
-    IAppTabs *tab = Mergered_TabsContent::getTabManager()->currentTab();
-    if (tab->view() == nullptr) return;
-    BrowserView *view = tab->view();
+    connect(main_pannel->address_bar, &AddressBarWidget::navigateRequested,
+            this, &Browser_Framework::updateAddressBar);
 
-    connect(main_pannel->address_bar, SIGNAL(navigateRequested(QUrl)),
-            view, SLOT(setURL(QUrl)));
 }
 
-void Browser_Framework::musicInit()
+
+void Browser_Framework::updateAddressBar(const QUrl& url)
 {
-    m_player = new QMediaPlayer(this);
-    m_audio_output = new QAudioOutput(this);
+    IAppTabs* tab = m_tab_manager->currentTab();
 
-    m_player->setAudioOutput(m_audio_output);
+    if (tab == nullptr || tab->view() == nullptr)
+    {
+        m_tab_manager->createTab(url);
+        return;
+    }
 
-    m_audio_output->setVolume(1.);
-
-    m_player->setSource(QUrl("qrc:/assets/multimedia/DebilBrowser_MainTheme.mp3"));
-
-    m_player->play();
-
-    connect(m_player, &QMediaPlayer::mediaStatusChanged, this,
-            [this](QMediaPlayer::MediaStatus status)
-            {
-                if (status != QMediaPlayer::EndOfMedia)
-                    return;
-
-                m_player->setPosition(0);
-                m_player->play();
-            });
+    tab->view()->setURL(url);
 }
-
-
-// void Browser_Framework::changeEvent(QEvent* event)
-// {
-//     if (event->type() == QEvent::WindowStateChange)
-//     {
-//         emit windowStateChanged(this->isMaximized());
-//     }
-
-//     QWidget::changeEvent(event);
-// }
-
-
-
-
-
-
-
 
 
