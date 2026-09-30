@@ -15,13 +15,15 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
 
 
     m_newTabButton = new QToolButton(this);
-    m_newTabButton->setText("+");
+    m_newTabButton->setCheckable(true);
     m_newTabButton->setToolTip(tr("New tab"));
     m_newTabButton->setAutoRaise(true);
     m_newTabButton->setFixedSize(28, 28);
     m_newTabButton->setStyleSheet("QToolButton {background-color: #E5E5E5;"
                                   "             border: 1px solid #C8C8C8;}\
-                                   QToolButton:hover {background-color: #D0D0D0;}");
+                                   QToolButton:hover {background-color: #D0D0D0;}"
+                                  "QToolButton:checked {background-color: #D0D0D0;}");
+    this->updateNewTabBtn();
 
 
     m_windowBar = new WindowBar(this);
@@ -40,15 +42,12 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabManager::onCurrentTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabManager::onTabCloseRequested);
     connect(m_newTabButton, &QToolButton::clicked, this, [this]() {
-        //this->createTab(QUrl("https://www.google.com"));
-        //this->createTab(HomePage);
         this->onNewTabClicked();
     });
 
     connect(m_tabBar, &QTabBar::tabMoved,
             this, &TabManager::onTabMoved);
 
-    //this->createTab(QUrl("https://www.google.com"));
     this->createTab(HomePage);
 }
 
@@ -76,7 +75,8 @@ BrowserView* TabManager::createWebTab()
 
 
     m_tabBar->setCurrentIndex(index);
-    updateTabBarWidth();
+    this->updateTabBarWidth();
+    this->updateNewTabBtn();
 
     connect(view->page(), &QWebEnginePage::newWindowRequested, this,
             [this](QWebEngineNewWindowRequest& request)
@@ -118,14 +118,43 @@ void TabManager::createTab(const TabType tab_type)
     if (tab_type == HomePage)
         m_tabBar->setTabVisible(index, false);
 
-    updateTabBarWidth();
+    this->updateTabBarWidth();
+    this->updateNewTabBtn();
 
 
 }
 
 void TabManager::onNewTabClicked()
 {
-    this->onCurrentTabChanged(0);
+    IAppTabs* current = currentTab();
+    if (!current)
+        return;
+
+    if (current->type() == HomePage)
+    {
+        if (!m_lastWebView)
+            return;
+
+        for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
+        {
+            if (m_tabs[index]->view() == m_lastWebView)
+            {
+                m_tabBar->setCurrentIndex(index);
+                return;
+            }
+        }
+
+        return;
+    }
+
+    for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
+    {
+        if (m_tabs[index]->type() == HomePage)
+        {
+            m_tabBar->setCurrentIndex(index);
+            return;
+        }
+    }
 }
 
 void TabManager::closeTab(int index)
@@ -147,7 +176,8 @@ void TabManager::closeTab(int index)
     m_tabs.erase(m_tabs.begin() + index);
 
     m_tabBar->removeTab(index);
-    updateTabBarWidth();
+    this->updateTabBarWidth();
+    this->updateNewTabBtn();
 
     if (m_tabs.empty())
     {
@@ -180,9 +210,14 @@ void TabManager::onCurrentTabChanged(int index)
     IAppTabs* tab = m_tabs[index].get();
 
     if (tab->view() != nullptr)
+    {
+        m_lastWebView = tab->view();
         m_tabContent->showView(tab->view());
+    }
     else
         m_tabContent->showView(tab->widget());
+
+    this->updateNewTabBtn();
 
     emit currentTabChanged(index);
 }
@@ -212,7 +247,28 @@ void TabManager::onTabMoved(int from, int to)
     m_tabContent->moveView(from, to);
 }
 
+void TabManager::updateNewTabBtn()
+{
+    // button visibility based on tabs count
+    if (m_tabBar->count() <= 1) // has only home page or nothing
+        m_newTabButton->hide();
+    else
+        m_newTabButton->show(); // has another tabs
 
+    IAppTabs* tab = currentTab();
+    // dysplaying specific symbol depending on current tab
+    if (tab && tab->type() == HomePage) // current tab is home page
+    {
+        m_newTabButton->setText("X");
+        m_newTabButton->setChecked(true);
+    }
+    else
+    {
+        m_newTabButton->setText("+"); // another tabs
+        m_newTabButton->setChecked(false);
+    }
+
+}
 
 
 

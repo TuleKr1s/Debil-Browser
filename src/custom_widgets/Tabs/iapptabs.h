@@ -5,6 +5,11 @@
 
 #include "browserview.h"
 
+enum TabType {
+    WebTab,
+    HomePage
+};
+
 class IAppTabs
 {
 public:
@@ -14,6 +19,7 @@ public:
     virtual QWidget* widget() {return nullptr;}
     virtual QString title() const = 0;
     virtual void setTitle(const QString& title) = 0;
+    virtual TabType type() const = 0;
 
 };
 

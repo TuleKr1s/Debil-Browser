@@ -22,6 +22,7 @@ public:
     QString title() const override;
     void setTitle(const QString& title) override;
     AddressBarWidget* addressBar() const;
+    TabType type() const override;
 
 private:
 
@@ -30,6 +31,7 @@ private:
     HomePageWidgets* m_homepage_widgets;
 
     QString m_title {"Home Page"};
+    TabType m_tab_type {TabType::HomePage};
 
     void connectToStack();
     bool m_connectedToStack = false;

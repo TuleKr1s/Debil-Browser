@@ -111,3 +111,8 @@ AddressBarWidget* HomePageTab::addressBar() const
 {
     return m_homepage_widgets->m_addressbar_widget;
 }
+
+TabType HomePageTab::type() const
+{
+    return m_tab_type;
+}

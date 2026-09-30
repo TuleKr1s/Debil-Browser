@@ -27,10 +27,17 @@ public:
         m_title = title;
     }
 
+    TabType type() const override
+    {
+        return m_tab_type;
+    }
+
 private:
 
     BrowserView* m_view;
     QString m_title;
+
+    TabType m_tab_type {TabType::WebTab};
 
 };
 

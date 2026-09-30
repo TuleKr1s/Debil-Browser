@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTabBar>
 #include <QHBoxLayout>
+#include <QPointer>
 #include <QToolButton>
 
 #include <memory>
@@ -15,10 +16,7 @@
 #include "tabcontent.h"
 #include "../../ui/windowbar.h"
 
-enum TabType {
-    WebTab,
-    HomePage
-};
+
 
 class TabManager : public QWidget
 {
@@ -36,10 +34,13 @@ public:
 private:
 
     BrowserView* createWebTab();
+    // updating button appearance based on presence of tabs or tab type
+    void updateNewTabBtn();
 
     QTabBar* m_tabBar;
     QToolButton* m_newTabButton;
     TabContent* m_tabContent;
+    QPointer<BrowserView> m_lastWebView;
 
     WindowBar* m_windowBar;
 
