@@ -40,6 +40,8 @@ private:
 
     // updating address bar behavior based on current tab
     void updateAddressBar(const QUrl& url);
+    // updating navigation bar
+    void updateNavigation();
 
 
 };

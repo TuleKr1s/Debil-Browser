@@ -39,17 +39,12 @@ Browser_Framework::Browser_Framework(QWidget *parent)
 void Browser_Framework::connectNavigation()
 {
 
-
-    IAppTabs *tab = m_tab_manager->currentTab();
-    if (tab->view() == nullptr) return;
-    BrowserView *view = tab->view();
-
-    connect(main_pannel->nav_wgt->back_btn, SIGNAL(clicked()),
-            view, SLOT(goBack()));
-    connect(main_pannel->nav_wgt->forward_btn, SIGNAL(clicked()),
-            view, SLOT(goForward()));
-    connect(main_pannel->nav_wgt->reload_btn, SIGNAL(clicked()),
-            view, SLOT(reloadPage()));
+    connect(main_pannel->nav_wgt->back_btn, &QPushButton::clicked,
+            this, &Browser_Framework::updateNavigation);
+    connect(main_pannel->nav_wgt->forward_btn, &QPushButton::clicked,
+            this, &Browser_Framework::updateNavigation);
+    connect(main_pannel->nav_wgt->reload_btn, &QPushButton::clicked,
+            this, &Browser_Framework::updateNavigation);
 }
 
 void Browser_Framework::connectAddressBar()
@@ -83,4 +78,19 @@ void Browser_Framework::updateAddressBar(const QUrl& url)
     tab->view()->setURL(url);
 }
 
+void Browser_Framework::updateNavigation()
+{
+    IAppTabs* tab = m_tab_manager->currentTab();
+    if (tab == nullptr || tab->view() == nullptr)
+        return;
+
+    BrowserView* view = tab->view();
+
+    if (sender() == main_pannel->nav_wgt->back_btn)
+        view->goBack();
+    else if (sender() == main_pannel->nav_wgt->forward_btn)
+        view->goForward();
+    else if (sender() == main_pannel->nav_wgt->reload_btn)
+        view->reloadPage();
+}
 
