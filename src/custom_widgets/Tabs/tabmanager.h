@@ -35,6 +35,8 @@ public:
 
 private:
 
+    BrowserView* createWebTab();
+
     QTabBar* m_tabBar;
     QToolButton* m_newTabButton;
     TabContent* m_tabContent;

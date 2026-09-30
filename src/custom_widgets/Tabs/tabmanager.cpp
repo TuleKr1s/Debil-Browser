@@ -1,5 +1,7 @@
 #include "tabmanager.h"
 
+#include <QWebEngineNewWindowRequest>
+
 
 TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     : QWidget{parent}, m_tabContent(tab_content)
@@ -53,12 +55,15 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
 
 void TabManager::createTab(const QUrl& url)
 {
+    BrowserView* view = createWebTab();
+    view->setURL(url);
+}
 
+BrowserView* TabManager::createWebTab()
+{
     qDebug() << "creating tab";
     BrowserView* view = new BrowserView(m_tabContent);
     m_tabContent->addView(view);
-
-    view->setURL(url);
 
     auto tab = AppTabs_Factory::createWebTab(view, "New Tab");
 
@@ -73,6 +78,14 @@ void TabManager::createTab(const QUrl& url)
     m_tabBar->setCurrentIndex(index);
     updateTabBarWidth();
 
+    connect(view->page(), &QWebEnginePage::newWindowRequested, this,
+            [this](QWebEngineNewWindowRequest& request)
+            {
+                BrowserView* newView = createWebTab();
+                request.openIn(newView->page());
+            });
+
+    return view;
 }
 
 void TabManager::createTab(const TabType tab_type)
