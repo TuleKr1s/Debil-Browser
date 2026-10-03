@@ -37,7 +37,7 @@ private:
     BrowserView* m_view;
     QString m_title;
 
-    TabType m_tab_type {TabType::WebTab};
+    TabType m_tab_type {TabType::Web};
 
 };
 

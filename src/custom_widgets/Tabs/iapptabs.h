@@ -6,7 +6,7 @@
 #include "browserview.h"
 
 enum TabType {
-    WebTab,
+    Web,
     HomePage
 };
 

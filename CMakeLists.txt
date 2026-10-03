@@ -84,9 +84,10 @@ qt_add_resources(BrowserResources
     resources.qrc
 )
 
-target_sources(Debil_Browser PRIVATE
-    ${BrowserResources}
-)
+add_library(BrowserResourcesObject OBJECT ${BrowserResources})
+target_link_libraries(BrowserResourcesObject PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+
+target_sources(Debil_Browser PRIVATE $<TARGET_OBJECTS:BrowserResourcesObject>)
 
 
 target_link_libraries(Debil_Browser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
@@ -126,23 +127,44 @@ if(BUILD_TESTING)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
 
     add_executable(Debil_BrowserTests
-        src/tests/browser_components_test.cpp
+        browser_all_components_test.cpp
+        src/core/browser_framework.h src/core/browser_framework.cpp
+        src/core/mainpannel.h src/core/mainpannel.cpp
+        src/core/headerpanel.h src/core/headerpanel.cpp
+        src/ui/navigationwidget.h src/ui/navigationwidget.cpp
         src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
+        src/ui/windowbar.h src/ui/windowbar.cpp
         src/web/searchengineselector.h src/web/searchengineselector.cpp
         src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
+        src/custom_widgets/clockwidget.h src/custom_widgets/clockwidget.cpp
+        src/custom_widgets/Tabs/tabmanager.h src/custom_widgets/Tabs/tabmanager.cpp
+        src/custom_widgets/Tabs/webtab.h src/custom_widgets/Tabs/webtab.cpp
+        src/custom_widgets/Tabs/tabcontent.h src/custom_widgets/Tabs/tabcontent.cpp
+        src/custom_widgets/Tabs/mergered_tabscontent.h src/custom_widgets/Tabs/mergered_tabscontent.cpp
+        src/custom_widgets/Tabs/homepagetab.h src/custom_widgets/Tabs/homepagetab.cpp
+        src/custom_widgets/Tabs/iapptabs.h
+        src/custom_widgets/Tabs/apptabs_factory.h
+        src/custom_widgets/Tabs/bghomepage.h src/custom_widgets/Tabs/bghomepage.cpp
+        src/custom_widgets/Tabs/browserview.h src/custom_widgets/Tabs/browserview.cpp
+        src/custom_widgets/Tabs/homepagewidgets.h src/custom_widgets/Tabs/homepagewidgets.cpp
         src/web/searchengine_factory.h
         src/web/search_engines/isearchengine.h
         src/web/search_engines/googlesearchengine.h
         src/web/search_engines/yandexsearchengine.h
     )
 
+    target_sources(Debil_BrowserTests PRIVATE $<TARGET_OBJECTS:BrowserResourcesObject>)
+
     target_link_libraries(Debil_BrowserTests PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::Test
+        Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+        Qt${QT_VERSION_MAJOR}::Multimedia
     )
 
     add_test(NAME Debil_BrowserTests COMMAND Debil_BrowserTests)
     set_tests_properties(Debil_BrowserTests PROPERTIES
-        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+        TIMEOUT 180
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QTWEBENGINE_DISABLE_SANDBOX=1;QT_OPENGL=software;QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu --no-sandbox"
     )
 endif()

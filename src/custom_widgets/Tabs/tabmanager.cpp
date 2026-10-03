@@ -213,12 +213,25 @@ void TabManager::closeTab(int index)
     m_tabs.erase(m_tabs.begin() + index);
 
     m_tabBar->removeTab(index);
-    this->updateNewTabBtn();
 
     if (m_tabs.empty())
     {
         this->createTab(HomePage);
     }
+
+    if (m_tabBar->currentIndex() == -1)
+    {
+        for (int homeIndex = 0; homeIndex < static_cast<int>(m_tabs.size()); ++homeIndex)
+        {
+            if (m_tabs[homeIndex]->type() == HomePage)
+            {
+                m_tabBar->setCurrentIndex(homeIndex);
+                break;
+            }
+        }
+    }
+
+    this->updateNewTabBtn();
 }
 
 IAppTabs* TabManager::currentTab() const
