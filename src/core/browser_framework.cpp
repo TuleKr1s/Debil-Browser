@@ -9,6 +9,7 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     m_tab_manager = mergered_Tabs.getTabManager();
 
 
+
     // panel with address bar, navigations, extensions
     main_pannel = new MainPannel(this);
 

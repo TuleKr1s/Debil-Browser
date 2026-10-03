@@ -48,7 +48,20 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     connect(m_tabBar, &QTabBar::tabMoved,
             this, &TabManager::onTabMoved);
 
+    // only one home page tab
+    // deletion will result in program closing
+    // always have index: 0
     this->createTab(HomePage);
+    const int homepage_index = m_tabBar->currentIndex();
+
+    // invisible tab to warmup QWebEngine
+    // never be visible or deleted
+    // always have index: 1
+    // m_warmup_view = createWebTab();
+    // m_warmup_view->setURL(QUrl("about:blank"));
+    // const int warmup_index = m_tabBar->currentIndex();
+    // m_tabBar->setTabVisible(warmup_index, false);
+    // m_tabBar->setCurrentIndex(homepage_index);
 }
 
 
@@ -163,6 +176,8 @@ void TabManager::closeTab(int index)
 
     if (index < 0 || index >= static_cast<int>(m_tabs.size()))
         return;
+    // if (m_tabs[index]->view() == m_warmup_view)
+    //     return;
 
     IAppTabs* tab = m_tabs[index].get();
 

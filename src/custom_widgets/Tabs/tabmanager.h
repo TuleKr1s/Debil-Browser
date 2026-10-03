@@ -36,6 +36,7 @@ private:
     BrowserView* createWebTab();
     // updating button appearance based on presence of tabs or tab type
     void updateNewTabBtn();
+    void updateTabBarWidth();
 
     QTabBar* m_tabBar;
     QToolButton* m_newTabButton;
@@ -48,7 +49,8 @@ private:
 
     QHBoxLayout* tabManager_lay;
 
-    void updateTabBarWidth();
+    // warmup tab to fix visual bug
+    BrowserView* m_warmup_view;
 
 private slots:
 

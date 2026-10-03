@@ -17,25 +17,28 @@ class BGHomePage : public QWidget
 public:
     explicit BGHomePage(QWidget *parent = nullptr);
 
-    void setVideo(const QString& file_path);
-
-    void play();
-    void pause();
-    void stop();
+    void setActive(bool active);
 
     void setVolume(float volume);
     void setMuted(bool muted);
+
+    void loadVideo(const QString& file_path);
+    void loadImage(const QString& file_path);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    QMediaPlayer* m_player;
-    QAudioOutput* m_audioOutput;
-    QVideoSink* m_videoSink;
+    QMediaPlayer m_player;
+    QAudioOutput m_audioOutput;
+    QVideoSink m_videoSink;
 
     QImage m_currentFrame;
+    bool m_isActive = false;
+    bool m_hasVideo = false;
+    bool m_isMuted = false;
 
+    void updateMutedState();
 
 };
 

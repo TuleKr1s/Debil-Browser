@@ -5,7 +5,9 @@ HomePageTab::HomePageTab(QWidget *parent)
 {
 
     m_backgroundMedia = new BGHomePage(this);
-    m_backgroundMedia->setVideo("qrc:/assets/multimedia/DebilBrowser_MainTheme.mp4");
+    //m_backgroundMedia->loadVideo("qrc:/assets/multimedia/DebilBrowser_MainTheme.mp4");
+    m_backgroundMedia->loadImage(":/assets/Homepage_wallpapers/main_bg_homepage_dark.png");
+
 
     m_homepage_widgets = new HomePageWidgets(this);
 
@@ -49,9 +51,9 @@ bool HomePageTab::eventFilter(QObject* watched, QEvent* event)
         event->type() == QEvent::WindowStateChange)
     {
         if (m_browserWindow->isMinimized())
-            m_backgroundMedia->pause();
+            m_backgroundMedia->setActive(false);
         else if (isVisible())
-            m_backgroundMedia->play();
+            m_backgroundMedia->setActive(true);
     }
 
     return QWidget::eventFilter(watched, event);
@@ -72,17 +74,10 @@ void HomePageTab::connectToStack()
             this, [this, stack](int index)
             {
                 const bool active = (stack->widget(index) == this);
-
-                if (active)
-                    m_backgroundMedia->play();
-                else
-                    m_backgroundMedia->pause();
+                m_backgroundMedia->setActive(active);
             });
 
-    if (stack->currentWidget() == this)
-        m_backgroundMedia->play();
-    else
-        m_backgroundMedia->pause();
+    m_backgroundMedia->setActive(stack->currentWidget() == this);
 
 }
 

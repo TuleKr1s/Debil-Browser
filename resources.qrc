@@ -11,5 +11,7 @@
         <file>assets/right_arrow.png</file>
         <file>assets/multimedia/DebilBrowser_MainTheme.mp4</file>
         <file>css/ClockWidget.css</file>
+        <file>assets/Homepage_wallpapers/main_bg_homepage_dark.png</file>
+        <file>assets/Homepage_wallpapers/main_bg_homepage_light.png</file>
     </qresource>
 </RCC>
