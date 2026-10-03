@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QBoxLayout>
+#include <QUrl>
 
 
 #include "../web/searchengineselector.h"
@@ -18,6 +19,13 @@ public:
 
     // remove choice search button as needed
     void setSearchBtnVisible(bool);
+
+public slots:
+    void setUrl(const QUrl& url);
+    void updateSearchEngineForUrl(const QUrl& url);
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
 

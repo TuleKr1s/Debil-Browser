@@ -30,13 +30,13 @@ public:
     void closeTab(int index);
 
     IAppTabs* currentTab() const;
+    QUrl currentUrl() const;
 
 private:
 
     BrowserView* createWebTab();
     // updating button appearance based on presence of tabs or tab type
     void updateNewTabBtn();
-    void updateTabBarWidth();
 
     QTabBar* m_tabBar;
     QToolButton* m_newTabButton;
@@ -62,6 +62,7 @@ private slots:
 signals:
 
     void currentTabChanged(int index);
+    void currentUrlChanged(const QUrl& url);
 
 };
 

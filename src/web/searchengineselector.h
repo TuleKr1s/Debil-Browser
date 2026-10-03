@@ -20,6 +20,8 @@ public:
 
     QSize sizeHint() const override;
     ISearchEngine* getCurrentSearchEngine();
+    bool selectSearchEngine(const QString& name);
+    bool selectSearchEngineForUrl(const QUrl& url);
 private:
 
     QHBoxLayout* search_choice_lay;

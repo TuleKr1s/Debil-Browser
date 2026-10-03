@@ -3,6 +3,8 @@
 //#include "../web/searchengine_factory.h"
 
 #include <QRegularExpression>
+#include <QEvent>
+#include <QTimer>
 #include <QUrl>
 
 AddressBarWidget::AddressBarWidget(QWidget *parent)
@@ -20,6 +22,7 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 
     connect(address_bar, SIGNAL(returnPressed()),
             this, SLOT(onReturnPressed()));
+    address_bar->installEventFilter(this);
 
 
     addressBar_layout = new QHBoxLayout();
@@ -33,15 +36,28 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 
 }
 
+void AddressBarWidget::setUrl(const QUrl& url)
+{
+    address_bar->setText(url.toDisplayString(QUrl::FullyDecoded));
+}
+
+void AddressBarWidget::updateSearchEngineForUrl(const QUrl& url)
+{
+    search_choice_menu->selectSearchEngineForUrl(url);
+}
+
+bool AddressBarWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == address_bar && event->type() == QEvent::MouseButtonPress)
+        QTimer::singleShot(0, address_bar, &QLineEdit::selectAll);
+
+    return QWidget::eventFilter(watched, event);
+}
+
 
 bool AddressBarWidget::isUrlInput(const QString& text) const
 {
     QString trimmed_text = text.trimmed();
-
-    if (trimmed_text.contains(' '))
-    {
-        return false;
-    }
 
     QUrl url = QUrl::fromUserInput(trimmed_text);
 
@@ -55,6 +71,9 @@ bool AddressBarWidget::isUrlInput(const QString& text) const
     {
         return true;
     }
+
+    if (trimmed_text.contains(' '))
+        return false;
 
     static const QRegularExpression ip_address_pattern("^\\d{1,3}(\\.\\d{1,3}){3}$");
     QString host = url.host();

@@ -20,6 +20,12 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     // necessary connections
     connectNavigation();
     connectAddressBar();
+    connect(m_tab_manager, &TabManager::currentUrlChanged,
+            main_pannel->address_bar, &AddressBarWidget::setUrl);
+    connect(m_tab_manager, &TabManager::currentUrlChanged,
+            main_pannel->address_bar, &AddressBarWidget::updateSearchEngineForUrl);
+    main_pannel->address_bar->setUrl(m_tab_manager->currentUrl());
+    main_pannel->address_bar->updateSearchEngineForUrl(m_tab_manager->currentUrl());
 
 
     main_lay = new QVBoxLayout(this);

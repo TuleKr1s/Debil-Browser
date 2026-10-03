@@ -33,8 +33,7 @@ QSize SearchEngineSelector::sizeHint() const
 
 void SearchEngineSelector::setupSearchEngine()
 {
-    search_engines.push_back(SearchEngine_Factory::createGoogle());
-    search_engines.push_back(SearchEngine_Factory::createYandex());
+    search_engines = SearchEngine_Factory::createAll();
 
 
     for (const auto& search_engine : search_engines)
@@ -59,6 +58,36 @@ void SearchEngineSelector::setupSearchEngine()
 ISearchEngine* SearchEngineSelector::getCurrentSearchEngine()
 {
     return current_search_engine;
+}
+
+bool SearchEngineSelector::selectSearchEngine(const QString& name)
+{
+    for (const auto& searchEngine : search_engines)
+    {
+        if (searchEngine->getSearchEngineName().compare(name, Qt::CaseInsensitive) == 0)
+        {
+            if (current_search_engine != searchEngine.get())
+                setCurrentSearchEngine(searchEngine.get());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool SearchEngineSelector::selectSearchEngineForUrl(const QUrl& url)
+{
+    for (const auto& searchEngine : search_engines)
+    {
+        if (!searchEngine->matchesSearchUrl(url))
+            continue;
+
+        if (current_search_engine != searchEngine.get())
+            setCurrentSearchEngine(searchEngine.get());
+        return true;
+    }
+
+    return false;
 }
 
 void SearchEngineSelector::setCurrentSearchEngine(ISearchEngine* search_engine)

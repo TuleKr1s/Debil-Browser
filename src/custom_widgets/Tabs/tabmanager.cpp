@@ -12,6 +12,7 @@ TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     m_tabBar->setMovable(true);
     m_tabBar->setExpanding(false);
     m_tabBar->setElideMode(Qt::ElideRight);
+    m_tabBar->setStyleSheet("QTabBar::tab { width: 180px; }");
 
 
     m_newTabButton = new QToolButton(this);
@@ -88,7 +89,6 @@ BrowserView* TabManager::createWebTab()
 
 
     m_tabBar->setCurrentIndex(index);
-    this->updateTabBarWidth();
     this->updateNewTabBtn();
 
     connect(view->page(), &QWebEnginePage::newWindowRequested, this,
@@ -96,6 +96,29 @@ BrowserView* TabManager::createWebTab()
             {
                 BrowserView* newView = createWebTab();
                 request.openIn(newView->page());
+            });
+
+    connect(view, &QWebEngineView::urlChanged, this,
+            [this, view](const QUrl& url)
+            {
+                IAppTabs* activeTab = currentTab();
+                if (activeTab != nullptr && view == activeTab->view())
+                    emit currentUrlChanged(url);
+            });
+
+    connect(view, &QWebEngineView::titleChanged, this,
+            [this, view](const QString& title)
+            {
+                for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
+                {
+                    if (m_tabs[index]->view() != view)
+                        continue;
+
+                    const QString tabTitle = title.isEmpty() ? tr("New Tab") : title;
+                    m_tabs[index]->setTitle(tabTitle);
+                    m_tabBar->setTabText(index, tabTitle);
+                    break;
+                }
             });
 
     return view;
@@ -131,7 +154,6 @@ void TabManager::createTab(const TabType tab_type)
     if (tab_type == HomePage)
         m_tabBar->setTabVisible(index, false);
 
-    this->updateTabBarWidth();
     this->updateNewTabBtn();
 
 
@@ -191,18 +213,12 @@ void TabManager::closeTab(int index)
     m_tabs.erase(m_tabs.begin() + index);
 
     m_tabBar->removeTab(index);
-    this->updateTabBarWidth();
     this->updateNewTabBtn();
 
     if (m_tabs.empty())
     {
         this->createTab(HomePage);
     }
-}
-
-void TabManager::updateTabBarWidth()
-{
-    m_tabBar->setMaximumWidth(m_tabBar->sizeHint().width());
 }
 
 IAppTabs* TabManager::currentTab() const
@@ -213,6 +229,12 @@ IAppTabs* TabManager::currentTab() const
         return nullptr;
 
     return m_tabs[index].get();
+}
+
+QUrl TabManager::currentUrl() const
+{
+    IAppTabs* tab = currentTab();
+    return tab != nullptr && tab->view() != nullptr ? tab->view()->getURL() : QUrl();
 }
 
 
@@ -235,6 +257,7 @@ void TabManager::onCurrentTabChanged(int index)
     this->updateNewTabBtn();
 
     emit currentTabChanged(index);
+    emit currentUrlChanged(currentUrl());
 }
 
 void TabManager::onTabCloseRequested(int index)
