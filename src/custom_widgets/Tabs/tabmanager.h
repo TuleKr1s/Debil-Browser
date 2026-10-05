@@ -31,6 +31,7 @@ public:
 
     IAppTabs* currentTab() const;
     QUrl currentUrl() const;
+    QString getTabTitle() const;
 
 private:
 
@@ -63,6 +64,7 @@ signals:
 
     void currentTabChanged(int index);
     void currentUrlChanged(const QUrl& url);
+    void currentTitleChanged(const QString& title);
 
 };
 

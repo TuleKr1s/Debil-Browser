@@ -1,5 +1,7 @@
 #include "clockwidget.h"
 
+#include <algorithm>
+
 ClockWidget::ClockWidget(QWidget *parent)
     : QLabel{parent}, m_timer(new QTimer(this))
 {
@@ -14,7 +16,10 @@ ClockWidget::ClockWidget(QWidget *parent)
     }
 
     setAlignment(Qt::AlignCenter);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    setMinimumSize(QSize(300,120));
+    setMaximumSize(QSize(800, 300));
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     connect(m_timer, &QTimer::timeout,
             this, &ClockWidget::updateTime);
@@ -35,6 +40,32 @@ void ClockWidget::updateTime()
             "\n" +
             current_time.toString("dddd, d MMMM yyyy"));
 
-    adjustSize();
-    setFixedSize(sizeHint());
+
 }
+
+void ClockWidget::resizeEvent(QResizeEvent* event)
+{
+    QLabel::resizeEvent(event);
+
+    const int calculated_size = std::min(event->size().width() / 10,
+                                         event->size().height() / 3);
+
+    const int font_size = qBound(MIN_FONT_SIZE, calculated_size, MAX_FONT_SIZE);
+
+    QFont current_font = font();
+    current_font.setPixelSize(font_size);
+    current_font.setBold(true);
+    this->setFont(current_font);
+
+
+}
+
+
+
+
+
+
+
+
+
+

@@ -117,6 +117,10 @@ BrowserView* TabManager::createWebTab()
                     const QString tabTitle = title.isEmpty() ? tr("New Tab") : title;
                     m_tabs[index]->setTitle(tabTitle);
                     m_tabBar->setTabText(index, tabTitle);
+
+                    if (index == m_tabBar->currentIndex())
+                        emit currentTitleChanged(tabTitle);
+
                     break;
                 }
             });
@@ -271,6 +275,7 @@ void TabManager::onCurrentTabChanged(int index)
 
     emit currentTabChanged(index);
     emit currentUrlChanged(currentUrl());
+    emit currentTitleChanged(getTabTitle());
 }
 
 void TabManager::onTabCloseRequested(int index)
@@ -321,6 +326,10 @@ void TabManager::updateNewTabBtn()
 
 }
 
+QString TabManager::getTabTitle() const
+{
+    return currentTab()->title();
+}
 
 
 

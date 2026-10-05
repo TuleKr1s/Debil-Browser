@@ -12,7 +12,7 @@ MainPannel::MainPannel(QWidget *parent)
     pannel_lay = new QHBoxLayout(this);
 
     pannel_lay->addWidget(nav_wgt);
-    pannel_lay->addWidget(address_bar);
+    pannel_lay->addWidget(address_bar, 1);
     pannel_lay->addStretch(1);
 
     this->setLayout(pannel_lay);

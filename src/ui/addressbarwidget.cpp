@@ -1,18 +1,40 @@
 #include "addressbarwidget.h"
 
-//#include "../web/searchengine_factory.h"
-
+#include <QApplication>
+#include <QGridLayout>
 #include <QRegularExpression>
 #include <QEvent>
-#include <QTimer>
+#include <QResizeEvent>
 #include <QUrl>
 
 AddressBarWidget::AddressBarWidget(QWidget *parent)
     : QWidget{parent}
 {
+    address_bar = new QLineEdit(this);
 
-    address_bar = new QLineEdit();
+    display_widget = new QWidget(this);
+    url_label = new QLabel(display_widget);
+    title_label = new QLabel(display_widget);
 
+    url_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    title_label->setAlignment(Qt::AlignCenter);
+
+    auto* display_layout = new QGridLayout(display_widget);
+    display_layout->setContentsMargins(8, 0, 8, 0);
+    display_layout->setSpacing(6);
+    display_layout->addWidget(url_label, 0, 0);
+    display_layout->addWidget(title_label, 0, 1);
+    display_layout->setColumnStretch(0, 1);
+    display_layout->setColumnStretch(1, 1);
+    display_layout->setColumnStretch(2, 1);
+
+    address_stack = new QStackedLayout();
+    address_stack->setContentsMargins(0, 0, 0, 0);
+    address_stack->addWidget(display_widget);
+    address_stack->addWidget(address_bar);
+    address_stack->setCurrentWidget(display_widget);
+
+    qApp->installEventFilter(this);
 
     current_search_engine = nullptr;
     search_choice_menu = new SearchEngineSelector(this);
@@ -20,25 +42,51 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
             this, &AddressBarWidget::setSearchEngine);
     setSearchEngine(search_choice_menu->getCurrentSearchEngine());
 
-    connect(address_bar, SIGNAL(returnPressed()),
-            this, SLOT(onReturnPressed()));
-    address_bar->installEventFilter(this);
+    connect(address_bar, &QLineEdit::returnPressed,
+            this, &AddressBarWidget::onReturnPressed);
 
 
     addressBar_layout = new QHBoxLayout();
     addressBar_layout->addWidget(search_choice_menu);
-    addressBar_layout->addWidget(address_bar);
+    addressBar_layout->addLayout(address_stack, 1);
 
+    //addressBar_layout->setContentsMargins(0,0,0,0);
+    //addressBar_layout->setSpacing(0);
 
-
-    this->setMinimumWidth(1000); // !!!!!!!!! replace with a more flexible version
     this->setLayout(addressBar_layout);
+
+    this->setMinimumWidth(325);
+    this->setMaximumWidth(1000);
+    this->setFixedHeight(32);
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    // temp measure !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    this->setObjectName("addressBar");
+    this->setAttribute(Qt::WA_StyledBackground, true);
+
+    this->setStyleSheet("AddressBarWidget#addressBar {"
+                        "   border: 1px solid #555;"
+                        "   background-color: white;"
+                        "}");
+
+    addressBar_layout->setContentsMargins(2,2,2,2);
+
+
+
 
 }
 
 void AddressBarWidget::setUrl(const QUrl& url)
 {
+    current_url = url;
     address_bar->setText(url.toDisplayString(QUrl::FullyDecoded));
+    updateDisplayText();
+}
+
+void AddressBarWidget::setTitle(const QString& title)
+{
+    current_title = title;
+    updateDisplayText();
 }
 
 void AddressBarWidget::updateSearchEngineForUrl(const QUrl& url)
@@ -48,10 +96,68 @@ void AddressBarWidget::updateSearchEngineForUrl(const QUrl& url)
 
 bool AddressBarWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched == address_bar && event->type() == QEvent::MouseButtonPress)
-        QTimer::singleShot(0, address_bar, &QLineEdit::selectAll);
+    const bool display_clicked = watched == display_widget ||
+                                 watched == url_label ||
+                                 watched == title_label;
+
+    if (display_clicked && event->type() == QEvent::MouseButtonPress)
+    {
+        showEditMode();
+        return true;
+    }
+
+    if (event->type() == QEvent::MouseButtonPress && address_bar->hasFocus())
+    {
+        auto* clicked_widget = qobject_cast<QWidget*>(watched);
+        const bool clicked_inside_editor = clicked_widget &&
+            (clicked_widget == address_bar || address_bar->isAncestorOf(clicked_widget));
+
+        if (!clicked_inside_editor)
+            showDisplayMode();
+    }
+
+    if (watched == address_bar && event->type() == QEvent::FocusOut)
+        showDisplayMode();
 
     return QWidget::eventFilter(watched, event);
+}
+
+void AddressBarWidget::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    updateDisplayText();
+}
+
+void AddressBarWidget::showDisplayMode()
+{
+    address_stack->setCurrentWidget(display_widget);
+    updateDisplayText();
+}
+
+void AddressBarWidget::showEditMode()
+{
+    address_bar->setText(current_url.toDisplayString(QUrl::FullyDecoded));
+    address_stack->setCurrentWidget(address_bar);
+    address_bar->setFocus();
+    address_bar->selectAll();
+}
+
+void AddressBarWidget::updateDisplayText()
+{
+    QString domain = current_url.host().isEmpty()
+                         ? current_url.toDisplayString(QUrl::FullyDecoded)
+                         : current_url.host();
+
+    if (domain.startsWith(QStringLiteral("www."), Qt::CaseInsensitive))
+        domain.remove(0, 4);
+
+    url_label->setText(url_label->fontMetrics().elidedText(
+        domain, Qt::ElideRight, url_label->width()));
+    title_label->setText(title_label->fontMetrics().elidedText(
+        current_title, Qt::ElideRight, title_label->width()));
+
+    url_label->setToolTip(current_url.toDisplayString(QUrl::FullyDecoded));
+    title_label->setToolTip(current_title);
 }
 
 
@@ -86,12 +192,12 @@ bool AddressBarWidget::isUrlInput(const QString& text) const
 
 void AddressBarWidget::onReturnPressed()
 {
-
     QString text = address_bar->text();
 
     if (!isUrlInput(text) && current_search_engine)
     {
         emit navigateRequested(QUrl(current_search_engine->createSearchURL(text)));
+        showDisplayMode();
         return;
     }
 
@@ -102,7 +208,7 @@ void AddressBarWidget::onReturnPressed()
     }
 
     emit navigateRequested(QUrl(text));
-
+    showDisplayMode();
 }
 
 void AddressBarWidget::setSearchEngine(ISearchEngine* search_engine)
@@ -117,7 +223,6 @@ void AddressBarWidget::setSearchBtnVisible(bool flag)
     else
         search_choice_menu->hide();
 }
-
 
 
 
