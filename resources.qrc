@@ -1,17 +1,21 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/multimedia/DebilBrowser_MainTheme.mp3</file>
-        <file>assets/close_btn.png</file>
-        <file>assets/full_window_btn.png</file>
-        <file>assets/half_window_btn.png</file>
-        <file>assets/left_arrow.png</file>
-        <file>assets/menu_btn.png</file>
-        <file>assets/minimize_btn.png</file>
-        <file>assets/refresh.png</file>
-        <file>assets/right_arrow.png</file>
+        <file>assets/WindowBar/close_btn.png</file>
+        <file>assets/WindowBar/full_window_btn.png</file>
+        <file>assets/WindowBar/half_window_btn.png</file>
+        <file>assets/NavigationBar/left_arrow.png</file>
+        <file>assets/WindowBar/menu_btn.png</file>
+        <file>assets/WindowBar/minimize_btn.png</file>
+        <file>assets/NavigationBar/refresh.png</file>
+        <file>assets/NavigationBar/right_arrow.png</file>
         <file>assets/multimedia/DebilBrowser_MainTheme.mp4</file>
         <file>css/ClockWidget.css</file>
         <file>assets/Homepage_wallpapers/main_bg_homepage_dark.png</file>
         <file>assets/Homepage_wallpapers/main_bg_homepage_light.png</file>
+        <file>assets/MainPanel/add_bookmark_btn.png</file>
+        <file>assets/MainPanel/added_bookmark_btn.png</file>
+        <file>assets/MainPanel/page_menu_btn.png</file>
+        <file>assets/Debil_Browser_icon.png</file>
     </qresource>
 </RCC>

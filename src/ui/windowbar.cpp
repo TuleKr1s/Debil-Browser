@@ -9,15 +9,15 @@ WindowBar::WindowBar(QWidget *parent)
     m_fullWindowBtn = new QPushButton(this);
     m_closeWindowBtn = new QPushButton(this);
 
-    m_menuBtn->setIcon(QIcon(":/assets/menu_btn.png"));
-    m_minimizeBtn->setIcon(QIcon(":/assets/minimize_btn.png"));
-    //m_fullWindowBtn->setIcon(QIcon(":/assets/half_window_btn.png"));
-    m_closeWindowBtn->setIcon(QIcon(":/assets/close_btn.png"));
+    m_menuBtn->setIcon(QIcon(":/assets/WindowBar/menu_btn.png"));
+    m_minimizeBtn->setIcon(QIcon(":/assets/WindowBar/minimize_btn.png"));
+    //m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
+    m_closeWindowBtn->setIcon(QIcon(":/assets/WindowBar/close_btn.png"));
 
     window()->isMaximized() ? m_fullWindowBtn->
-                              setIcon(QIcon(":/assets/full_window_btn.png")) :
+                              setIcon(QIcon(":/assets/WindowBar/full_window_btn.png")) :
                             m_fullWindowBtn->
-                                setIcon(QIcon(":/assets/half_window_btn.png"));
+                                setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
 
 
 
@@ -65,11 +65,11 @@ void WindowBar::onFullWindowBtnClicked()
 {
     if (window()->isMaximized()) {
         window()->showNormal();
-        m_fullWindowBtn->setIcon(QIcon(":/assets/full_window_btn.png"));
+        m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/full_window_btn.png"));
     }
     else {
         window()->showMaximized();
-        m_fullWindowBtn->setIcon(QIcon(":/assets/half_window_btn.png"));
+        m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
     }
 
 }

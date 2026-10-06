@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QBoxLayout>
+#include <QPushButton>
 
 
 #include "../ui/navigationwidget.h"
@@ -24,6 +25,7 @@ private:
 
     int widget_height = 55;
 
+    QPushButton* m_bookmark_btn;
 
     QHBoxLayout* pannel_lay;
 

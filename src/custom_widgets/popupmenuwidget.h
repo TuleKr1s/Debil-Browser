@@ -17,9 +17,10 @@ public:
     std::vector<QPushButton*> btn_list;
 
     QSize sizeHint() const override;
-    QPushButton* createBtn(QString name);
+    QPushButton* createBtn(QString name, QIcon icon = QIcon{});
     QPushButton* getMainBtn();
     void setMainBtnText(const QString& text);
+    void setMainBtnIcon(const QIcon& icon);
 
 private:
 

@@ -8,9 +8,9 @@ NavigationWidget::NavigationWidget(QWidget *parent)
     forward_btn = new QPushButton(this);
     reload_btn = new QPushButton(this);
 
-    back_btn->setIcon(QIcon(":/assets/left_arrow.png"));
-    forward_btn->setIcon(QIcon(":/assets/right_arrow.png"));
-    reload_btn->setIcon(QIcon(":/assets/refresh.png"));
+    back_btn->setIcon(QIcon(":/assets/NavigationBar/left_arrow.png"));
+    forward_btn->setIcon(QIcon(":/assets/NavigationBar/right_arrow.png"));
+    reload_btn->setIcon(QIcon(":/assets/NavigationBar/refresh.png"));
 
     back_btn->setFixedSize(QSize(25,25));
     forward_btn->setFixedSize(QSize(25,25));
@@ -21,7 +21,6 @@ NavigationWidget::NavigationWidget(QWidget *parent)
     main_lay->addWidget(forward_btn);
     main_lay->addWidget(reload_btn);
 
-    main_lay->addStretch(1);
 
     this->setLayout(main_lay);
 

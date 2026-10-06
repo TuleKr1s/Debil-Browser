@@ -19,14 +19,32 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
     url_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     title_label->setAlignment(Qt::AlignCenter);
 
+    btn_menu = new QWidget(this);
+    m_page_menu_btn = new PopupMenuWidget(btn_menu);
+    m_page_menu_btn->setMainBtnIcon(QIcon(":/assets/MainPanel/page_menu_btn.png"));
+    m_page_menu_btn->setToolTip("Page menu");
+    m_page_menu_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    browser_protection_btn = new QPushButton(btn_menu);
+    browser_protection_btn->setIcon(QIcon(":/assets/Debil_Browser_icon.png"));
+    browser_protection_btn->setToolTip("Debil protection");
+    browser_protection_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    btn_menu_lay = new QHBoxLayout(btn_menu);
+    btn_menu_lay->addWidget(m_page_menu_btn);
+    btn_menu_lay->addWidget(browser_protection_btn);
+    btn_menu_lay->setContentsMargins(0,0,0,0);
+    btn_menu_lay->setSpacing(0);
+
     auto* display_layout = new QGridLayout(display_widget);
     display_layout->setContentsMargins(8, 0, 8, 0);
     display_layout->setSpacing(6);
     display_layout->addWidget(url_label, 0, 0);
     display_layout->addWidget(title_label, 0, 1);
+    display_layout->addWidget(btn_menu, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
     display_layout->setColumnStretch(0, 1);
     display_layout->setColumnStretch(1, 1);
-    display_layout->setColumnStretch(2, 1);
+    display_layout->setColumnStretch(2, 0);
 
     address_stack = new QStackedLayout();
     address_stack->setContentsMargins(0, 0, 0, 0);
@@ -50,8 +68,6 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
     addressBar_layout->addWidget(search_choice_menu);
     addressBar_layout->addLayout(address_stack, 1);
 
-    //addressBar_layout->setContentsMargins(0,0,0,0);
-    //addressBar_layout->setSpacing(0);
 
     this->setLayout(addressBar_layout);
 

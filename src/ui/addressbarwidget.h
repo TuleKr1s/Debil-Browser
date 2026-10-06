@@ -8,7 +8,7 @@
 #include <QStackedLayout>
 #include <QUrl>
 
-
+#include "../custom_widgets/popupmenuwidget.h"
 #include "../web/searchengineselector.h"
 
 
@@ -36,6 +36,12 @@ private:
     QLabel* url_label;
     QLabel* title_label;
     QStackedLayout* address_stack;
+
+    QWidget* btn_menu;
+    QPushButton* browser_protection_btn;
+    PopupMenuWidget* m_page_menu_btn;
+    QHBoxLayout* btn_menu_lay;
+
 
     QHBoxLayout* addressBar_layout;
     ISearchEngine* current_search_engine;

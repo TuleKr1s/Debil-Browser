@@ -73,14 +73,14 @@ private:
 void BrowserAllComponentsTest::resourcesAreEmbedded()
 {
     const QStringList resources{
-        QStringLiteral(":/assets/close_btn.png"),
-        QStringLiteral(":/assets/full_window_btn.png"),
-        QStringLiteral(":/assets/half_window_btn.png"),
-        QStringLiteral(":/assets/left_arrow.png"),
-        QStringLiteral(":/assets/menu_btn.png"),
-        QStringLiteral(":/assets/minimize_btn.png"),
-        QStringLiteral(":/assets/refresh.png"),
-        QStringLiteral(":/assets/right_arrow.png"),
+        QStringLiteral(":/assets/WindowBar/close_btn.png"),
+        QStringLiteral(":/assets/WindowBar/full_window_btn.png"),
+        QStringLiteral(":/assets/WindowBar/half_window_btn.png"),
+        QStringLiteral(":/assets/NavigationBar/left_arrow.png"),
+        QStringLiteral(":/assets/WindowBar/menu_btn.png"),
+        QStringLiteral(":/assets/WindowBar/minimize_btn.png"),
+        QStringLiteral(":/assets/NavigationBar/refresh.png"),
+        QStringLiteral(":/assets/NavigationBar/right_arrow.png"),
         QStringLiteral(":/assets/multimedia/DebilBrowser_MainTheme.mp3"),
         QStringLiteral(":/assets/multimedia/DebilBrowser_MainTheme.mp4"),
         QStringLiteral(":/assets/Homepage_wallpapers/main_bg_homepage_dark.png"),
