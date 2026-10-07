@@ -328,7 +328,11 @@ void TabManager::updateNewTabBtn()
 
 QString TabManager::getTabTitle() const
 {
-    return currentTab()->title();
+    IAppTabs* tab = currentTab();
+    if (tab == nullptr || tab->type() == HomePage)
+        return QString();
+
+    return tab->title();
 }
 
 

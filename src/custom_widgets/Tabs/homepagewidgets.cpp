@@ -8,6 +8,8 @@ HomePageWidgets::HomePageWidgets(QWidget *parent)
 
     m_addressbar_widget = new AddressBarWidget(this);
     m_addressbar_widget->setSearchBtnVisible(false);
+    m_addressbar_widget->setDisplayWidgetEnabled(false);
+    m_addressbar_widget->setPlaceholderText(tr("Enter a query or address"));
 
     homepage_widgets_lay = new QGridLayout;
 

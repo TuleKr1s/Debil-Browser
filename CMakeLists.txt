@@ -35,6 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/web/search_engines/googlesearchengine.h
         src/web/search_engines/yandexsearchengine.h
         src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
+        src/ui/addressbardisplaywidget.h src/ui/addressbardisplaywidget.cpp
         src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp
         src/web/searchengineselector.h src/web/searchengineselector.cpp
         src/core/headerpanel.h src/core/headerpanel.cpp
@@ -133,6 +134,7 @@ if(BUILD_TESTING)
         src/core/headerpanel.h src/core/headerpanel.cpp
         src/ui/navigationwidget.h src/ui/navigationwidget.cpp
         src/ui/addressbarwidget.h src/ui/addressbarwidget.cpp
+        src/ui/addressbardisplaywidget.h src/ui/addressbardisplaywidget.cpp
         src/ui/windowbar.h src/ui/windowbar.cpp
         src/web/searchengineselector.h src/web/searchengineselector.cpp
         src/custom_widgets/popupmenuwidget.h src/custom_widgets/popupmenuwidget.cpp

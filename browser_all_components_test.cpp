@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QGridLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPointer>
 #include <QPushButton>
@@ -28,6 +29,7 @@
 #include "src/custom_widgets/Tabs/tabmanager.h"
 #include "src/custom_widgets/Tabs/webtab.h"
 #include "src/ui/addressbarwidget.h"
+#include "src/ui/addressbardisplaywidget.h"
 #include "src/ui/navigationwidget.h"
 #include "src/ui/windowbar.h"
 #include "src/web/searchengine_factory.h"
@@ -51,6 +53,8 @@ private slots:
     void addressBarAddsHttpsToHostInput();
     void addressBarSearchesWithSelectedEngine();
     void addressBarUpdatesTextAndEngineFromUrl();
+    void addressBarCanDisableDisplayWidget();
+    void addressBarDisplaysPlaceholderAndCenteredTitle();
     void navigationWidgetProvidesAllControls();
     void mainPanelComposesNavigationAndAddressBar();
     void clockWidgetShowsTimeAndRunsTimer();
@@ -252,6 +256,53 @@ void BrowserAllComponentsTest::addressBarUpdatesTextAndEngineFromUrl()
     QVERIFY(!selector->isHidden());
 }
 
+void BrowserAllComponentsTest::addressBarCanDisableDisplayWidget()
+{
+    AddressBarWidget addressBar;
+    addressBar.show();
+    QVERIFY(addressBar.isVisible());
+
+    auto* input = addressInput(addressBar);
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    QVERIFY(display != nullptr);
+    QVERIFY(!display->isHidden());
+
+    addressBar.setDisplayWidgetEnabled(false);
+    QVERIFY(!input->isHidden());
+    QVERIFY(display->isHidden());
+
+    input->setText(QStringLiteral("example.com"));
+    addressBar.onReturnPressed();
+    QVERIFY(!input->isHidden());
+
+    addressBar.setDisplayWidgetEnabled(true);
+    QVERIFY(!display->isHidden());
+    QVERIFY(input->isHidden());
+}
+
+void BrowserAllComponentsTest::addressBarDisplaysPlaceholderAndCenteredTitle()
+{
+    AddressBarWidget addressBar;
+    addressBar.resize(800, 32);
+    addressBar.setPlaceholderText(QStringLiteral("Enter a query or address"));
+    addressBar.setUrl(QUrl());
+    addressBar.show();
+    QCoreApplication::processEvents();
+
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    auto* urlLabel = addressBar.findChild<QLabel*>(QStringLiteral("addressBarUrlLabel"));
+    auto* titleLabel = addressBar.findChild<QLabel*>(QStringLiteral("addressBarTitleLabel"));
+    QVERIFY(display != nullptr);
+    QVERIFY(urlLabel != nullptr);
+    QVERIFY(titleLabel != nullptr);
+    QCOMPARE(urlLabel->text(), QStringLiteral("Enter a query or address"));
+
+    addressBar.setTitle(QStringLiteral("Centered page title"));
+    QCoreApplication::processEvents();
+    QCOMPARE(titleLabel->text(), QStringLiteral("Centered page title"));
+    QVERIFY(qAbs(titleLabel->geometry().center().x() - display->rect().center().x()) <= 1);
+}
+
 void BrowserAllComponentsTest::navigationWidgetProvidesAllControls()
 {
     NavigationWidget navigation;
@@ -296,6 +347,7 @@ void BrowserAllComponentsTest::clockWidgetShowsTimeAndRunsTimer()
 void BrowserAllComponentsTest::homePageWidgetsComposeClockAndAddressBar()
 {
     HomePageWidgets widgets;
+    widgets.show();
 
     QVERIFY(widgets.m_addressbar_widget != nullptr);
     QVERIFY(widgets.findChild<ClockWidget *>() != nullptr);
@@ -303,6 +355,12 @@ void BrowserAllComponentsTest::homePageWidgetsComposeClockAndAddressBar()
     const auto selector = widgets.m_addressbar_widget->findChild<SearchEngineSelector *>();
     QVERIFY(selector != nullptr);
     QVERIFY(selector->isHidden());
+
+    auto* input = addressInput(*widgets.m_addressbar_widget);
+    QCOMPARE(input->placeholderText(), QStringLiteral("Enter a query or address"));
+    input->setFocus();
+    QCoreApplication::processEvents();
+    QCOMPARE(input->placeholderText(), QStringLiteral("Enter a query or address"));
 }
 
 void BrowserAllComponentsTest::backgroundHomePageAcceptsMediaSettings()
@@ -397,6 +455,7 @@ void BrowserAllComponentsTest::tabManagerCreatesAndSwitchesTabs()
     QVERIFY(newTabButton->isHidden());
 
     QSignalSpy tabChangedSpy(&manager, &TabManager::currentTabChanged);
+    QSignalSpy titleChangedSpy(&manager, &TabManager::currentTitleChanged);
     manager.createTab(QUrl(QStringLiteral("about:blank")));
     QCOMPARE(tabBar->count(), 2);
     QCOMPARE(manager.currentTab()->type(), TabType::Web);
@@ -405,6 +464,8 @@ void BrowserAllComponentsTest::tabManagerCreatesAndSwitchesTabs()
 
     QTest::mouseClick(newTabButton, Qt::LeftButton);
     QCOMPARE(manager.currentTab()->type(), TabType::HomePage);
+    QVERIFY(!titleChangedSpy.isEmpty());
+    QCOMPARE(titleChangedSpy.constLast().constFirst().toString(), QString());
     QTest::mouseClick(newTabButton, Qt::LeftButton);
     QCOMPARE(manager.currentTab()->type(), TabType::Web);
 

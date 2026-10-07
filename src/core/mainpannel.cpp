@@ -11,6 +11,7 @@ MainPannel::MainPannel(QWidget *parent)
 
     nav_wgt = new NavigationWidget(this);
     address_bar = new AddressBarWidget(this);
+    address_bar->setPlaceholderText(tr("Enter a query or address"));
 
     pannel_lay = new QHBoxLayout(this);
 

@@ -27,6 +27,7 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     connect(m_tab_manager, &TabManager::currentUrlChanged,
             main_pannel->address_bar, &AddressBarWidget::updateSearchEngineForUrl);
     main_pannel->address_bar->setUrl(m_tab_manager->currentUrl());
+    main_pannel->address_bar->setTitle(m_tab_manager->getTabTitle());
     main_pannel->address_bar->updateSearchEngineForUrl(m_tab_manager->currentUrl());
 
 

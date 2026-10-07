@@ -4,22 +4,24 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QBoxLayout>
-#include <QLabel>
 #include <QStackedLayout>
 #include <QUrl>
 
-#include "../custom_widgets/popupmenuwidget.h"
 #include "../web/searchengineselector.h"
 
+class AddressBarDisplayWidget;
 
 class AddressBarWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit AddressBarWidget(QWidget *parent = nullptr);
+    ~AddressBarWidget() override;
 
     // remove choice search button as needed
     void setSearchBtnVisible(bool);
+    void setDisplayWidgetEnabled(bool enabled);
+    void setPlaceholderText(const QString& text);
 
 public slots:
     void setUrl(const QUrl& url);
@@ -28,19 +30,11 @@ public slots:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QLineEdit* address_bar;
-    QWidget* display_widget;
-    QLabel* url_label;
-    QLabel* title_label;
+    AddressBarDisplayWidget* display_widget;
     QStackedLayout* address_stack;
-
-    QWidget* btn_menu;
-    QPushButton* browser_protection_btn;
-    PopupMenuWidget* m_page_menu_btn;
-    QHBoxLayout* btn_menu_lay;
 
 
     QHBoxLayout* addressBar_layout;
@@ -48,12 +42,11 @@ private:
     SearchEngineSelector* search_choice_menu;
 
     QUrl current_url;
-    QString current_title;
+    bool display_widget_enabled;
 
     bool isUrlInput(const QString& text) const;
     void showDisplayMode();
     void showEditMode();
-    void updateDisplayText();
 
 public slots:
 
