@@ -84,7 +84,6 @@ BrowserView* TabManager::createWebTab()
     m_tabs.push_back(std::move(tab));
 
 
-
     int index = m_tabBar->addTab(title);
 
 
@@ -120,6 +119,26 @@ BrowserView* TabManager::createWebTab()
 
                     if (index == m_tabBar->currentIndex())
                         emit currentTitleChanged(tabTitle);
+
+                    break;
+                }
+            });
+
+    connect(view, &QWebEngineView::iconChanged, this,
+            [this, view](const QIcon& icon)
+            {
+                for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
+                {
+                    if (m_tabs[index]->view() != view)
+                        continue;
+
+                    const QIcon page_icon = icon.isNull() ?
+                        QIcon(":/assets/Tabs/failed_to_load_page.png") // replace with animated loading
+                                                          : icon;
+                    m_tabBar->setTabIcon(index, page_icon);
+
+                    if (index == m_tabBar->currentIndex())
+                        emit currentIconChanged(page_icon);
 
                     break;
                 }

@@ -65,6 +65,7 @@ signals:
     void currentTabChanged(int index);
     void currentUrlChanged(const QUrl& url);
     void currentTitleChanged(const QString& title);
+    void currentIconChanged(const QIcon& icon);
 
 };
 

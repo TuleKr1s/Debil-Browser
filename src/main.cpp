@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // hardware acceleration
     QApplication a(argc, argv);
 
+    a.setWindowIcon(QIcon(":/assets/Debil_Browser_icon.png"));
 
     Browser_Framework browser;
     browser.show();
