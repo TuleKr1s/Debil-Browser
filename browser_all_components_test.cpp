@@ -55,6 +55,7 @@ private slots:
     void addressBarUpdatesTextAndEngineFromUrl();
     void addressBarCanDisableDisplayWidget();
     void addressBarDisplaysPlaceholderAndCenteredTitle();
+    void addressBarDoesNotReselectTextWhenAlreadyFocused();
     void navigationWidgetProvidesAllControls();
     void mainPanelComposesNavigationAndAddressBar();
     void clockWidgetShowsTimeAndRunsTimer();
@@ -301,6 +302,33 @@ void BrowserAllComponentsTest::addressBarDisplaysPlaceholderAndCenteredTitle()
     QCoreApplication::processEvents();
     QCOMPARE(titleLabel->text(), QStringLiteral("Centered page title"));
     QVERIFY(qAbs(titleLabel->geometry().center().x() - display->rect().center().x()) <= 1);
+}
+
+void BrowserAllComponentsTest::addressBarDoesNotReselectTextWhenAlreadyFocused()
+{
+    AddressBarWidget addressBar;
+    addressBar.resize(800, 32);
+    addressBar.setUrl(QUrl(QStringLiteral("https://example.com/some/path")));
+    addressBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&addressBar));
+
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    auto* input = addressInput(addressBar);
+    QVERIFY(display != nullptr);
+
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QCOMPARE(input->selectedText(), input->text());
+
+    // A mouse press can propagate to the parent while still being inside the editor.
+    const QPoint editorPoint(20, 16);
+    QTest::mouseClick(&addressBar, Qt::LeftButton, Qt::NoModifier,
+                      input->mapTo(&addressBar, editorPoint));
+    QVERIFY(input->isVisible());
+    QVERIFY(input->hasFocus());
+
+    QTest::mouseClick(input, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QVERIFY(input->selectedText().isEmpty());
+    QVERIFY(input->cursorPosition() < input->text().size());
 }
 
 void BrowserAllComponentsTest::navigationWidgetProvidesAllControls()

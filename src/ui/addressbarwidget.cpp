@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QRegularExpression>
 #include <QEvent>
+#include <QMouseEvent>
 #include <QUrl>
 
 AddressBarWidget::AddressBarWidget(QWidget *parent)
@@ -89,9 +90,9 @@ bool AddressBarWidget::eventFilter(QObject* watched, QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonPress && address_bar->hasFocus())
     {
-        auto* clicked_widget = qobject_cast<QWidget*>(watched);
-        const bool clicked_inside_editor = clicked_widget &&
-            (clicked_widget == address_bar || address_bar->isAncestorOf(clicked_widget));
+        const auto* mouse_event = static_cast<QMouseEvent*>(event);
+        const bool clicked_inside_editor = address_bar->rect().contains(
+            address_bar->mapFromGlobal(mouse_event->globalPosition().toPoint()));
 
         if (!clicked_inside_editor)
             showDisplayMode();
@@ -112,6 +113,9 @@ void AddressBarWidget::showDisplayMode()
 
 void AddressBarWidget::showEditMode()
 {
+    if (address_bar->hasFocus() && address_stack->currentWidget() == address_bar)
+        return;
+
     address_bar->setText(current_url.toDisplayString(QUrl::FullyDecoded));
     address_stack->setCurrentWidget(address_bar);
     address_bar->setFocus();
