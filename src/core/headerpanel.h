@@ -20,6 +20,7 @@ public:
 private:
 
     QPoint m_mousePrevPos;
+    bool m_isDragging = false;
     int widget_height = 35;
 
     QHBoxLayout* header_lay;
@@ -32,6 +33,7 @@ protected:
 
     void mousePressEvent(QMouseEvent* e) override;
     void mouseMoveEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
 
 };
 
