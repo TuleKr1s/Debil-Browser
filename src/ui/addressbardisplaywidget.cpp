@@ -67,6 +67,13 @@ void AddressBarDisplayWidget::setPlaceholderText(const QString& text)
     updateDisplayText();
 }
 
+void AddressBarDisplayWidget::setDraftText(const QString& text, bool enabled)
+{
+    draft_text = text;
+    showing_draft = enabled;
+    updateDisplayText();
+}
+
 bool AddressBarDisplayWidget::eventFilter(QObject* watched, QEvent* event)
 {
     if ((watched == url_label || watched == title_label) &&
@@ -96,7 +103,9 @@ void AddressBarDisplayWidget::updateDisplayText()
                          ? current_url.toDisplayString(QUrl::FullyDecoded)
                          : current_url.host();
 
-    if (domain.startsWith(QStringLiteral("www."), Qt::CaseInsensitive))
+    if (showing_draft)
+        domain = draft_text;
+    else if (domain.startsWith(QStringLiteral("www."), Qt::CaseInsensitive))
         domain.remove(0, 4);
 
     const bool show_placeholder = domain.isEmpty();
@@ -114,7 +123,7 @@ void AddressBarDisplayWidget::updateDisplayText()
 
     url_label->setToolTip(show_placeholder
                               ? QString()
-                              : current_url.toDisplayString(QUrl::FullyDecoded));
+                              : (showing_draft ? draft_text : current_url.toDisplayString(QUrl::FullyDecoded)));
     title_label->setToolTip(current_title);
     updateTitleGeometry();
 }
@@ -126,7 +135,7 @@ void AddressBarDisplayWidget::updateTitleGeometry()
     const int half_width = qMax(0, qMin(center - 8, right_limit - center));
     const int maximum_width = half_width * 2;
     const QString visible_title = title_label->fontMetrics().elidedText(
-        current_title, Qt::ElideRight, maximum_width);
+        showing_draft ? QString() : current_title, Qt::ElideRight, maximum_width);
 
     title_label->setText(visible_title);
     const int title_width = qMin(title_label->sizeHint().width(), maximum_width);

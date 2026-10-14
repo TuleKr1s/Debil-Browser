@@ -56,6 +56,7 @@ private slots:
     void addressBarCanDisableDisplayWidget();
     void addressBarDisplaysPlaceholderAndCenteredTitle();
     void addressBarDoesNotReselectTextWhenAlreadyFocused();
+    void addressBarPreservesDraftInDisplayMode();
     void navigationWidgetProvidesAllControls();
     void mainPanelComposesNavigationAndAddressBar();
     void clockWidgetShowsTimeAndRunsTimer();
@@ -331,6 +332,52 @@ void BrowserAllComponentsTest::addressBarDoesNotReselectTextWhenAlreadyFocused()
     QVERIFY(input->cursorPosition() < input->text().size());
 }
 
+void BrowserAllComponentsTest::addressBarPreservesDraftInDisplayMode()
+{
+    AddressBarWidget addressBar;
+    addressBar.setShowDraftInDisplayMode(false);
+    addressBar.resize(800, 32);
+    addressBar.setUrl(QUrl(QStringLiteral("https://example.com")));
+    addressBar.setTitle(QStringLiteral("Example page"));
+    addressBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&addressBar));
+
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    auto* input = addressInput(addressBar);
+    auto* label = addressBar.findChild<QLabel*>(QStringLiteral("addressBarUrlLabel"));
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QTest::keyClicks(input, "unfinished query");
+    input->clearFocus();
+    QVERIFY(display->isVisible());
+    QVERIFY(!input->isVisible());
+    QCOMPARE(label->toolTip(), QStringLiteral("https://example.com"));
+    QVERIFY(!label->text().isEmpty());
+    auto* title = addressBar.findChild<QLabel*>(QStringLiteral("addressBarTitleLabel"));
+    QCOMPARE(title->text(), QStringLiteral("Example page"));
+
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QCOMPARE(input->text(), QStringLiteral("unfinished query"));
+    QVERIFY(input->selectedText().isEmpty());
+    input->setCursorPosition(input->text().size());
+    QTest::keyClicks(input, " continued");
+    QCOMPARE(input->text(), QStringLiteral("unfinished query continued"));
+    QTest::keyClick(input, Qt::Key_Return);
+    QVERIFY(display->isVisible());
+    QCOMPARE(label->toolTip(), QStringLiteral("https://example.com"));
+
+    // The main panel also has an address bar while HomePage is active.
+    addressBar.setShowDraftInDisplayMode(true);
+    addressBar.setUrl(QUrl());
+    addressBar.setPlaceholderText(QStringLiteral("Enter a query or address"));
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QTest::keyClicks(input, "home query");
+    input->clearFocus();
+    QVERIFY(display->isVisible());
+    QCOMPARE(label->text(), QStringLiteral("home query"));
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QCOMPARE(input->text(), QStringLiteral("home query"));
+}
+
 void BrowserAllComponentsTest::navigationWidgetProvidesAllControls()
 {
     NavigationWidget navigation;
@@ -389,6 +436,14 @@ void BrowserAllComponentsTest::homePageWidgetsComposeClockAndAddressBar()
     input->setFocus();
     QCoreApplication::processEvents();
     QCOMPARE(input->placeholderText(), QStringLiteral("Enter a query or address"));
+    QTest::keyClicks(input, "home draft");
+    input->clearFocus();
+    QVERIFY(input->isVisible());
+    QCOMPARE(input->text(), QStringLiteral("home draft"));
+    input->setFocus();
+    input->setCursorPosition(input->text().size());
+    QTest::keyClicks(input, " continued");
+    QCOMPARE(input->text(), QStringLiteral("home draft continued"));
 }
 
 void BrowserAllComponentsTest::backgroundHomePageAcceptsMediaSettings()

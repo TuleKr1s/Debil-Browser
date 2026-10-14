@@ -22,6 +22,7 @@ public:
     void setSearchBtnVisible(bool);
     void setDisplayWidgetEnabled(bool enabled);
     void setPlaceholderText(const QString& text);
+    void setShowDraftInDisplayMode(bool enabled);
 
 public slots:
     void setUrl(const QUrl& url);
@@ -43,6 +44,8 @@ private:
 
     QUrl current_url;
     bool display_widget_enabled;
+    bool has_unsubmitted_text = false;
+    bool show_draft_in_display_mode = true;
 
     bool isUrlInput(const QString& text) const;
     void showDisplayMode();

@@ -21,6 +21,7 @@ public:
     void setUrl(const QUrl& url);
     void setTitle(const QString& title);
     void setPlaceholderText(const QString& text);
+    void setDraftText(const QString& text, bool enabled);
 
 signals:
     void editRequested();
@@ -43,6 +44,8 @@ private:
     QUrl current_url;
     QString current_title;
     QString placeholder_text;
+    QString draft_text;
+    bool showing_draft = false;
 };
 
 #endif // ADDRESSBARDISPLAYWIDGET_H

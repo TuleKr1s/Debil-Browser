@@ -32,6 +32,9 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
 
     connect(address_bar, &QLineEdit::returnPressed,
             this, &AddressBarWidget::onReturnPressed);
+    connect(address_bar, &QLineEdit::textEdited, this, [this] {
+        has_unsubmitted_text = true;
+    });
     connect(display_widget, &AddressBarDisplayWidget::editRequested,
             this, &AddressBarWidget::showEditMode);
 
@@ -72,7 +75,8 @@ AddressBarWidget::~AddressBarWidget()
 void AddressBarWidget::setUrl(const QUrl& url)
 {
     current_url = url;
-    address_bar->setText(url.toDisplayString(QUrl::FullyDecoded));
+    if (!has_unsubmitted_text)
+        address_bar->setText(url.toDisplayString(QUrl::FullyDecoded));
     display_widget->setUrl(url);
 }
 
@@ -95,7 +99,10 @@ bool AddressBarWidget::eventFilter(QObject* watched, QEvent* event)
             address_bar->mapFromGlobal(mouse_event->globalPosition().toPoint()));
 
         if (!clicked_inside_editor)
+        {
+            address_bar->clearFocus();
             showDisplayMode();
+        }
     }
 
     if (display_widget_enabled && watched == address_bar && event->type() == QEvent::FocusOut)
@@ -106,6 +113,8 @@ bool AddressBarWidget::eventFilter(QObject* watched, QEvent* event)
 
 void AddressBarWidget::showDisplayMode()
 {
+    display_widget->setDraftText(address_bar->text(),
+                               has_unsubmitted_text && show_draft_in_display_mode);
     address_stack->setCurrentWidget(display_widget_enabled
                                         ? static_cast<QWidget*>(display_widget)
                                         : static_cast<QWidget*>(address_bar));
@@ -116,10 +125,12 @@ void AddressBarWidget::showEditMode()
     if (address_bar->hasFocus() && address_stack->currentWidget() == address_bar)
         return;
 
-    address_bar->setText(current_url.toDisplayString(QUrl::FullyDecoded));
+    if (!has_unsubmitted_text)
+        address_bar->setText(current_url.toDisplayString(QUrl::FullyDecoded));
     address_stack->setCurrentWidget(address_bar);
     address_bar->setFocus();
-    address_bar->selectAll();
+    if (!has_unsubmitted_text)
+        address_bar->selectAll();
 }
 
 bool AddressBarWidget::isUrlInput(const QString& text) const
@@ -154,6 +165,7 @@ bool AddressBarWidget::isUrlInput(const QString& text) const
 void AddressBarWidget::onReturnPressed()
 {
     QString text = address_bar->text();
+    has_unsubmitted_text = false;
 
     if (!isUrlInput(text) && current_search_engine)
     {
@@ -198,6 +210,13 @@ void AddressBarWidget::setPlaceholderText(const QString& text)
 {
     address_bar->setPlaceholderText(text);
     display_widget->setPlaceholderText(text);
+}
+
+void AddressBarWidget::setShowDraftInDisplayMode(bool enabled)
+{
+    show_draft_in_display_mode = enabled;
+    if (address_stack->currentWidget() == display_widget)
+        showDisplayMode();
 }
 
 

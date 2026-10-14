@@ -20,6 +20,14 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     // necessary connections
     connectNavigation();
     connectAddressBar();
+    auto updateAddressBarMode = [this] {
+        auto* tab = m_tab_manager->currentTab();
+        main_pannel->address_bar->setShowDraftInDisplayMode(
+            tab && tab->type() == HomePage);
+    };
+    connect(m_tab_manager, &TabManager::currentTabChanged,
+            this, updateAddressBarMode);
+    updateAddressBarMode();
     connect(m_tab_manager, &TabManager::currentUrlChanged,
             main_pannel->address_bar, &AddressBarWidget::setUrl);
     connect(m_tab_manager, &TabManager::currentTitleChanged,
