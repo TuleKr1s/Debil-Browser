@@ -28,7 +28,7 @@ AddressBarDisplayWidget::AddressBarDisplayWidget(QWidget* parent)
     page_menu_btn->setToolTip("Page menu");
     page_menu_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    browser_protection_btn->setIcon(QIcon(":/assets/Debil_Browser_icon.png"));
+    browser_protection_btn->setIcon(QIcon(":/assets/Debil_Browser.ico"));
     browser_protection_btn->setToolTip("Debil protection");
     browser_protection_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 

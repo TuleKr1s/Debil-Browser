@@ -16,7 +16,7 @@
         <file>assets/MainPanel/add_bookmark_btn.png</file>
         <file>assets/MainPanel/added_bookmark_btn.png</file>
         <file>assets/MainPanel/page_menu_btn.png</file>
-        <file>assets/Debil_Browser_icon.png</file>
+        <file>assets/Debil_Browser.ico</file>
         <file>assets/Tabs/failed_to_load_page.png</file>
     </qresource>
 </RCC>

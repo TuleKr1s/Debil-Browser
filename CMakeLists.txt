@@ -16,10 +16,12 @@ set(TS_FILES Debil_Browser_en_001.ts)
 
 set(PROJECT_SOURCES
         src/main.cpp
-
-
         ${TS_FILES}
 )
+
+if(WIN32)
+    list(APPEND PROJECT_SOURCES windows/app.rc)
+endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Debil_Browser
