@@ -9,15 +9,15 @@ WindowBar::WindowBar(QWidget *parent)
     m_fullWindowBtn = new QPushButton(this);
     m_closeWindowBtn = new QPushButton(this);
 
-    m_menuBtn->setIcon(QIcon(":/assets/WindowBar/menu_btn.png"));
-    m_minimizeBtn->setIcon(QIcon(":/assets/WindowBar/minimize_btn.png"));
-    //m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
-    m_closeWindowBtn->setIcon(QIcon(":/assets/WindowBar/close_btn.png"));
+    full_window_btn.addFile(":/assets/WindowBar/full_window_btn.png");
+    half_window_btn.addFile(":/assets/WindowBar/half_window_btn.png");
+    menu_btn.addFile(":/assets/WindowBar/menu_btn.png");
+    minimize_btn.addFile(":/assets/WindowBar/minimize_btn.png");
+    close_btn.addFile(":/assets/WindowBar/close_btn.png");
 
-    window()->isMaximized() ? m_fullWindowBtn->
-                              setIcon(QIcon(":/assets/WindowBar/full_window_btn.png")) :
-                            m_fullWindowBtn->
-                                setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
+    m_menuBtn->setIcon(menu_btn);
+    m_minimizeBtn->setIcon(minimize_btn);
+    m_closeWindowBtn->setIcon(close_btn);
 
 
 
@@ -65,15 +65,40 @@ void WindowBar::onFullWindowBtnClicked()
 {
     if (window()->isMaximized()) {
         window()->showNormal();
-        m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/full_window_btn.png"));
     }
     else {
         window()->showMaximized();
-        m_fullWindowBtn->setIcon(QIcon(":/assets/WindowBar/half_window_btn.png"));
     }
 
 }
 
+void WindowBar::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+
+
+    // If these lines are placed in the constructor,
+    // the top level widget will be TabManager rather than main window
+    window()->installEventFilter(this);
+    window()->isMaximized() ? m_fullWindowBtn->
+                              setIcon(half_window_btn) :
+                                m_fullWindowBtn->
+                                setIcon(full_window_btn);
+}
+
+bool WindowBar::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == window() && event->type() == QEvent::WindowStateChange)
+    {
+        if(window()->isMaximized())
+            m_fullWindowBtn->setIcon(half_window_btn);
+        else
+            m_fullWindowBtn->setIcon(full_window_btn);
+
+    }
+
+    return QWidget::eventFilter(obj, event);
+}
 
 
 

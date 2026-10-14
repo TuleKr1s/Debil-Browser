@@ -22,7 +22,13 @@ private:
 
     QHBoxLayout* window_bar_lay;
 
+    QIcon full_window_btn, half_window_btn;
+    QIcon menu_btn, minimize_btn, close_btn;
 
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
 
