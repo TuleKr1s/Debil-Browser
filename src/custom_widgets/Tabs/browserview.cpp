@@ -4,6 +4,12 @@ BrowserView::BrowserView(QWidget* parent)
     : QWebEngineView(parent)
 {
 
+    connect(this, &QWebEngineView::loadStarted,
+            this, [](){qDebug() << "Loading page started";});
+    connect(this, &QWebEngineView::loadProgress,
+            this, [](int progress) {qDebug() << "Loading: " << progress << "%";});
+    connect(this, &QWebEngineView::loadFinished,
+            this, [](bool result) {qDebug() << "Loading finished: " << result;});
 
 
 }

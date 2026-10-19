@@ -6,6 +6,7 @@
 #include <QBoxLayout>
 #include <QStackedLayout>
 #include <QUrl>
+#include <QPointer>
 
 #include "../web/searchengineselector.h"
 
@@ -23,6 +24,8 @@ public:
     void setDisplayWidgetEnabled(bool enabled);
     void setPlaceholderText(const QString& text);
     void setShowDraftInDisplayMode(bool enabled);
+    void setTabContext(QObject* tab, const QUrl& url);
+    void discardDraft();
 
 public slots:
     void setUrl(const QUrl& url);
@@ -46,6 +49,7 @@ private:
     bool display_widget_enabled;
     bool has_unsubmitted_text = false;
     bool show_draft_in_display_mode = true;
+    QPointer<QObject> current_tab_context;
 
     bool isUrlInput(const QString& text) const;
     void showDisplayMode();

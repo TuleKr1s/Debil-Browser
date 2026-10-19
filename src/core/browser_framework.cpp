@@ -22,6 +22,9 @@ Browser_Framework::Browser_Framework(QWidget *parent)
     connectAddressBar();
     auto updateAddressBarMode = [this] {
         auto* tab = m_tab_manager->currentTab();
+        main_pannel->address_bar->setTabContext(
+            tab ? (tab->view() ? static_cast<QObject*>(tab->view()) : tab->widget()) : nullptr,
+            m_tab_manager->currentUrl());
         main_pannel->address_bar->setShowDraftInDisplayMode(
             tab && tab->type() == HomePage);
     };
@@ -109,6 +112,9 @@ void Browser_Framework::updateNavigation()
     else if (sender() == main_pannel->nav_wgt->forward_btn)
         view->goForward();
     else if (sender() == main_pannel->nav_wgt->reload_btn)
+    {
+        main_pannel->address_bar->discardDraft();
         view->reloadPage();
+    }
 }
 

@@ -57,6 +57,8 @@ private slots:
     void addressBarDisplaysPlaceholderAndCenteredTitle();
     void addressBarDoesNotReselectTextWhenAlreadyFocused();
     void addressBarPreservesDraftInDisplayMode();
+    void addressBarKeepsDraftsPerTab();
+    void addressBarEditsOriginalSearchQuery();
     void navigationWidgetProvidesAllControls();
     void mainPanelComposesNavigationAndAddressBar();
     void clockWidgetShowsTimeAndRunsTimer();
@@ -378,6 +380,78 @@ void BrowserAllComponentsTest::addressBarPreservesDraftInDisplayMode()
     QCOMPARE(input->text(), QStringLiteral("home query"));
 }
 
+void BrowserAllComponentsTest::addressBarKeepsDraftsPerTab()
+{
+    AddressBarWidget addressBar;
+    QObject firstTab, secondTab, homeTab;
+    const QUrl url(QStringLiteral("https://example.com"));
+    addressBar.setShowDraftInDisplayMode(false);
+    addressBar.setTabContext(&firstTab, url);
+    addressBar.resize(800, 32);
+    addressBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&addressBar));
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    auto* input = addressInput(addressBar);
+    auto edit = [&] {
+        QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    };
+    edit();
+    QTest::keyClicks(input, "first draft");
+    addressBar.setTabContext(&secondTab, url);
+    edit();
+    QCOMPARE(input->text(), url.toDisplayString(QUrl::FullyDecoded));
+    QTest::keyClicks(input, "second draft");
+    addressBar.setTabContext(&firstTab, url);
+    edit();
+    QCOMPARE(input->text(), QStringLiteral("first draft"));
+    addressBar.setTabContext(&homeTab, QUrl());
+    addressBar.setShowDraftInDisplayMode(true);
+    edit();
+    QVERIFY(input->text().isEmpty());
+    QTest::keyClicks(input, "home draft");
+    addressBar.setTabContext(&secondTab, url);
+    addressBar.setShowDraftInDisplayMode(false);
+    edit();
+    QCOMPARE(input->text(), QStringLiteral("second draft"));
+    QTest::keyClick(input, Qt::Key_Return);
+    addressBar.setTabContext(&homeTab, QUrl());
+    addressBar.setShowDraftInDisplayMode(true);
+    edit();
+    QCOMPARE(input->text(), QStringLiteral("home draft"));
+    addressBar.setTabContext(&secondTab, url);
+    edit();
+    QCOMPARE(input->text(), url.toDisplayString(QUrl::FullyDecoded));
+}
+
+void BrowserAllComponentsTest::addressBarEditsOriginalSearchQuery()
+{
+    AddressBarWidget addressBar;
+    addressBar.setShowDraftInDisplayMode(false);
+    addressBar.resize(800, 32);
+    addressBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&addressBar));
+    auto* display = addressBar.findChild<AddressBarDisplayWidget*>();
+    auto* input = addressInput(addressBar);
+    const QString query = QString::fromUtf8("C++ & Qt: поиск 100% + #test");
+    GoogleSearchEngine google;
+    YandexSearchEngine yandex;
+    for (const auto* engine : {static_cast<ISearchEngine*>(&google),
+                               static_cast<ISearchEngine*>(&yandex)})
+    {
+        QSignalSpy navigation(&addressBar, &AddressBarWidget::navigateRequested);
+        addressBar.setUrl(QUrl(engine->createSearchURL(query)));
+        addressBar.updateSearchEngineForUrl(QUrl(engine->createSearchURL(query)));
+        QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+        QCOMPARE(input->text(), query);
+        QTest::keyClick(input, Qt::Key_Return);
+        QCOMPARE(navigation.count(), 1);
+        QCOMPARE(navigation.at(0).at(0).toUrl(), QUrl(engine->createSearchURL(query)));
+    }
+    addressBar.setUrl(QUrl(QStringLiteral("https://example.com/search?q=ordinary")));
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QCOMPARE(input->text(), QStringLiteral("https://example.com/search?q=ordinary"));
+}
+
 void BrowserAllComponentsTest::navigationWidgetProvidesAllControls()
 {
     NavigationWidget navigation;
@@ -638,6 +712,17 @@ void BrowserAllComponentsTest::browserFrameworkStartsAndNavigatesFromHomePage()
     emit mainPanel->address_bar->navigateRequested(QUrl(QStringLiteral("about:blank")));
     QTRY_COMPARE_WITH_TIMEOUT(tabBar->count(), 2, 5000);
     QCOMPARE(manager->currentTab()->type(), TabType::Web);
+
+    mainPanel->address_bar->setUrl(QUrl(QStringLiteral("about:blank")));
+    auto* display = mainPanel->address_bar->findChild<AddressBarDisplayWidget*>();
+    auto* input = addressInput(*mainPanel->address_bar);
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QTest::keyClicks(input, "unfinished before reload");
+    QCOMPARE(input->text(), QStringLiteral("unfinished before reload"));
+    QTest::mouseClick(mainPanel->nav_wgt->reload_btn, Qt::LeftButton);
+    QCOMPARE(input->text(), QStringLiteral("about:blank"));
+    QTest::mouseClick(display, Qt::LeftButton, Qt::NoModifier, QPoint(20, 16));
+    QCOMPARE(input->text(), QStringLiteral("about:blank"));
 
     manager->closeTab(tabBar->currentIndex());
     QTRY_COMPARE(manager->currentTab()->type(), TabType::HomePage);
