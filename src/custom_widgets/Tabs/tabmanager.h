@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QPointer>
 #include <QToolButton>
+#include <QMovie>
 
 #include <memory>
 #include <vector>

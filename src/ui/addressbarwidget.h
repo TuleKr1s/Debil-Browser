@@ -19,6 +19,8 @@ public:
     explicit AddressBarWidget(QWidget *parent = nullptr);
     ~AddressBarWidget() override;
 
+    AddressBarDisplayWidget* getAddressBarDisplay();
+
     // remove choice search button as needed
     void setSearchBtnVisible(bool);
     void setDisplayWidgetEnabled(bool enabled);

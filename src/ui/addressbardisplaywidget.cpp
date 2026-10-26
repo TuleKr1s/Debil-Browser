@@ -27,6 +27,19 @@ AddressBarDisplayWidget::AddressBarDisplayWidget(QWidget* parent)
     page_menu_btn->setMainBtnIcon(QIcon(":/assets/MainPanel/page_menu_btn.png"));
     page_menu_btn->setToolTip("Page menu");
     page_menu_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    page_scale_btn =
+        page_menu_btn->createBtn("Scale: ", QIcon(":/assets/MainPanel/scale_page.png"));
+    search_on_page_btn =
+        page_menu_btn->createBtn("Search on page", QIcon(":/assets/MainPanel/search_on_page.png"));
+    add_to_bookmark_btn =
+        page_menu_btn->createBtn("Add to bookmark", QIcon(":/assets/MainPanel/add_bookmark.png"));
+    pin_to_homepage_btn =
+        page_menu_btn->createBtn("Pin to homepage", QIcon(":/assets/MainPanel/add_to_homepage.png"));
+    copy_url_btn =
+        page_menu_btn->createBtn("Copy page url", QIcon(":/assets/MainPanel/copy_url.png"));
+    save_html_page_btn =
+        page_menu_btn->createBtn("Save page HTML", QIcon(":/assets/MainPanel/save_html_page.png"));
+
 
     browser_protection_btn->setIcon(QIcon(":/assets/Debil_Browser.ico"));
     browser_protection_btn->setToolTip("Debil protection");

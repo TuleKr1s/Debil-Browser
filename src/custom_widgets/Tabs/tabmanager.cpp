@@ -1,7 +1,7 @@
 #include "tabmanager.h"
 
 #include <QWebEngineNewWindowRequest>
-
+#include <QWebEngineLoadingInfo>
 
 TabManager::TabManager(TabContent* tab_content, QWidget *parent)
     : QWidget{parent}, m_tabContent(tab_content)
@@ -124,25 +124,60 @@ BrowserView* TabManager::createWebTab()
                 }
             });
 
+    auto* loading_gif = new QMovie(
+        ":/assets/Tabs/page_loading.gif", QByteArray(), view);
+    loading_gif->setScaledSize(QSize(24, 24));
+
+    auto setTabIcon = [this, view](const QIcon& icon)
+    {
+        for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
+        {
+            if (m_tabs[index]->view() != view)
+                continue;
+
+            m_tabBar->setTabIcon(index, icon);
+
+            if (index == m_tabBar->currentIndex())
+                emit currentIconChanged(icon);
+
+            break;
+        }
+    };
+
+    connect(loading_gif, &QMovie::frameChanged, this,
+            [loading_gif, setTabIcon](int)
+    {
+        setTabIcon(QIcon(loading_gif->currentPixmap()));
+    });
+
     connect(view, &QWebEngineView::iconChanged, this,
-            [this, view](const QIcon& icon)
-            {
-                for (int index = 0; index < static_cast<int>(m_tabs.size()); ++index)
-                {
-                    if (m_tabs[index]->view() != view)
-                        continue;
+            [loading_gif, setTabIcon](const QIcon& icon)
+    {
+        if (loading_gif->state() == QMovie::Running)
+            return;
 
-                    const QIcon page_icon = icon.isNull() ?
-                        QIcon(":/assets/Tabs/failed_to_load_page.png") // replace with animated loading
-                                                          : icon;
-                    m_tabBar->setTabIcon(index, page_icon);
+        setTabIcon(icon);
+    });
 
-                    if (index == m_tabBar->currentIndex())
-                        emit currentIconChanged(page_icon);
-
-                    break;
-                }
-            });
+    connect(view->page(), &QWebEnginePage::loadingChanged, this,
+            [view, loading_gif, setTabIcon](const QWebEngineLoadingInfo& info)
+    {
+        switch (info.status())
+        {
+        case QWebEngineLoadingInfo::LoadStartedStatus:
+            loading_gif->start();
+            break;
+        case QWebEngineLoadingInfo::LoadSucceededStatus:
+            loading_gif->stop();
+            setTabIcon(view->icon());
+            break;
+        case QWebEngineLoadingInfo::LoadFailedStatus:
+        case QWebEngineLoadingInfo::LoadStoppedStatus:
+            loading_gif->stop();
+            setTabIcon(QIcon(":/assets/Tabs/failed_to_load_page.png"));
+            break;
+        }
+    });
 
     return view;
 }

@@ -279,6 +279,10 @@ void AddressBarWidget::setShowDraftInDisplayMode(bool enabled)
         showDisplayMode();
 }
 
+AddressBarDisplayWidget* AddressBarWidget::getAddressBarDisplay()
+{
+    return display_widget;
+}
 
 
 

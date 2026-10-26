@@ -39,7 +39,16 @@ private:
     QLabel* title_label;
     QWidget* btn_menu;
     QPushButton* browser_protection_btn;
+
+    // ==========
     PopupMenuWidget* page_menu_btn;
+    QPushButton* page_scale_btn;
+    QPushButton* search_on_page_btn;
+    QPushButton* add_to_bookmark_btn;
+    QPushButton* pin_to_homepage_btn;
+    QPushButton* copy_url_btn;
+    QPushButton* save_html_page_btn;
+    // ==========
 
     QUrl current_url;
     QString current_title;

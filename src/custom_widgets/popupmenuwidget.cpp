@@ -33,13 +33,20 @@ QPushButton* PopupMenuWidget::createBtn(QString name, QIcon icon)
 {
     QPushButton* btn = new QPushButton(name, popup_menu);
     if (!icon.isNull())
+    {
         btn->setIcon(icon);
+        btn->setIconSize(QSize(16,16));
+    }
     btn_list.push_back(btn);
 
     popup_lay->addWidget(btn);
 
     connect(btn, SIGNAL(clicked()),
             popup_menu, SLOT(close()));
+
+    btn->setStyleSheet("QPushButton {"
+                       "    text-align: left;"
+                       "}");
 
     return btn;
 }
