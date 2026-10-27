@@ -1,9 +1,6 @@
 #include "windowbar.h"
 
-#include <QGuiApplication>
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
+#include "windowcontroller.h"
 
 WindowBar::WindowBar(QWidget *parent)
     : QWidget{parent}
@@ -59,40 +56,19 @@ WindowBar::WindowBar(QWidget *parent)
 
 void WindowBar::onCloseBtnClicked()
 {
-    window()->close();
+    WindowController::closeWindow(window());
 }
 
 
 void WindowBar::onMinimizeBtnClicked()
 {
-#ifdef Q_OS_WIN
-    if (QGuiApplication::platformName() == "windows")
-    {
-        PostMessageW(reinterpret_cast<HWND>(window()->winId()), WM_SYSCOMMAND, SC_MINIMIZE, 0);
-        return;
-    }
-#endif
-    window()->showMinimized();
+    WindowController::minimizeWindow(window());
 }
 
 
 void WindowBar::onFullWindowBtnClicked()
 {
-#ifdef Q_OS_WIN
-    if (QGuiApplication::platformName() == "windows" && !window()->isFullScreen())
-    {
-        const auto hwnd = reinterpret_cast<HWND>(window()->winId());
-        PostMessageW(hwnd, WM_SYSCOMMAND, IsZoomed(hwnd) ? SC_RESTORE : SC_MAXIMIZE, 0);
-        return;
-    }
-#endif
-    if (window()->isMaximized()) {
-        window()->showNormal();
-    }
-    else {
-        window()->showMaximized();
-    }
-
+    WindowController::toggleMaximized(window());
 }
 
 void WindowBar::showEvent(QShowEvent* event)

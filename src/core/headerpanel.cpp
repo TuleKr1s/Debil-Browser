@@ -1,7 +1,5 @@
 #include "headerpanel.h"
 
-#include <QWindow>
-
 HeaderPanel::HeaderPanel(QWidget *parent)
     : QWidget{parent}
 {
@@ -17,82 +15,6 @@ HeaderPanel::HeaderPanel(QWidget *parent)
     this->setLayout(header_lay);
     this->setMinimumHeight(widget_height);
     this->setMaximumHeight(widget_height);
-}
-
-
-QPoint HeaderPanel::getMousePrevPos()
-{
-    return m_mousePrevPos;
-}
-
-
-void HeaderPanel::setMousePrevPos(QPoint prevPos)
-{
-    if (m_mousePrevPos == prevPos)
-        return;
-    m_mousePrevPos = prevPos;
-}
-
-void HeaderPanel::mousePressEvent(QMouseEvent* e)
-{
-    // TabManager fills the header; its empty background is also a drag area.
-    // Its actual controls (tabs and buttons) must not initiate window dragging.
-    QWidget* child = childAt(e->position().toPoint());
-    const bool isDragArea = child == nullptr
-        || child == Mergered_TabsContent::getTabManager();
-    if (e->button() == Qt::LeftButton && isDragArea)
-    {
-        if (auto* handle = window()->windowHandle(); handle && handle->startSystemMove())
-        {
-            m_isDragging = false;
-            e->accept();
-            return;
-        }
-        this->setMousePrevPos(e->pos());
-        m_isDragging = true;
-        e->accept();
-        return;
-    }
-
-    m_isDragging = false;
-    return QWidget::mousePressEvent(e);
-}
-
-void HeaderPanel::mouseDoubleClickEvent(QMouseEvent* e)
-{
-    QWidget* child = childAt(e->position().toPoint());
-    const bool isDragArea = child == nullptr
-        || child == Mergered_TabsContent::getTabManager();
-    if (e->button() == Qt::LeftButton && isDragArea)
-    {
-        window()->isMaximized() ? window()->showNormal() : window()->showMaximized();
-        e->accept();
-        return;
-    }
-    QWidget::mouseDoubleClickEvent(e);
-}
-
-void HeaderPanel::mouseMoveEvent(QMouseEvent* e)
-{
-    if (!m_isDragging || !(e->buttons() & Qt::LeftButton))
-    {
-        return QWidget::mouseMoveEvent(e);
-    }
-
-    auto dx = e->pos().x() - m_mousePrevPos.x();
-    auto dy = e->pos().y() - m_mousePrevPos.y();
-
-    window()->setGeometry(window()->x()+dx, window()->y()+dy,\
-                        window()->width(), window()->height());
-    e->accept();
-}
-
-void HeaderPanel::mouseReleaseEvent(QMouseEvent* e)
-{
-    if (e->button() == Qt::LeftButton)
-        m_isDragging = false;
-
-    return QWidget::mouseReleaseEvent(e);
 }
 
 

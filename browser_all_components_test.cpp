@@ -81,6 +81,7 @@ private slots:
     void browserFrameworkStartsAndNavigatesFromHomePage();
     void tabManagerClosesTabs();
     void nativeWindowKeepsCaptionBehaviorAndVisibleHeader();
+    void nativeWindowSuppressesThemeCaptionPainting();
 
 private:
     static QLineEdit *addressInput(AddressBarWidget &addressBar);
@@ -883,6 +884,61 @@ void BrowserAllComponentsTest::nativeWindowKeepsCaptionBehaviorAndVisibleHeader(
     browser.close();
 #else
     QSKIP("Windows-only native frame regression test");
+#endif
+}
+
+void BrowserAllComponentsTest::nativeWindowSuppressesThemeCaptionPainting()
+{
+#ifdef Q_OS_WIN
+    if (QGuiApplication::platformName() != "windows")
+        QSKIP("Requires the Windows platform plugin");
+
+    class PaintProbeWindow : public WindowController
+    {
+    public:
+        using WindowController::nativeEvent;
+    };
+
+    PaintProbeWindow window;
+    auto* titleBar = new QWidget(&window);
+    titleBar->setFixedHeight(35);
+    auto* layout = new QVBoxLayout(&window);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(titleBar);
+    layout->addStretch();
+    window.initializeWindow(titleBar);
+    window.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    const auto hwnd = reinterpret_cast<HWND>(window.winId());
+
+    // Exercise the extra theme-paint routes independently of WM_NCPAINT.
+    // Dispatch to the handler directly: the undocumented messages' payloads
+    // must never reach DefWindowProc, including while the window is resizing.
+    const UINT paintMessages[] = {WM_NCPAINT, 0x00AE, 0x00AF};
+    for (int step = 0; step < 16; ++step)
+    {
+        window.resize(916 + (step % 4) * 19, 739 + (step % 3) * 13);
+        window.move(40 + (step % 5) * 11, 40 + (step % 4) * 17);
+        QCoreApplication::processEvents();
+        for (UINT paintMessage : paintMessages)
+        {
+            MSG message{};
+            message.hwnd = hwnd;
+            message.message = paintMessage;
+            qintptr result = -1;
+            QVERIFY2(window.nativeEvent(QByteArrayLiteral("windows_generic_MSG"), &message, &result),
+                     "System caption painting escaped the custom frame handler");
+            QCOMPARE(result, qintptr(0));
+        }
+        const LONG_PTR style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+        QCOMPARE(style & WS_CAPTION, LONG_PTR(WS_CAPTION));
+        QVERIFY(style & WS_THICKFRAME);
+        QVERIFY(style & WS_MINIMIZEBOX);
+        QVERIFY(style & WS_MAXIMIZEBOX);
+    }
+    window.close();
+#else
+    QSKIP("Windows-only native painting regression test");
 #endif
 }
 

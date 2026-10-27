@@ -16,6 +16,7 @@ set(TS_FILES Debil_Browser_en_001.ts)
 
 set(PROJECT_SOURCES
         src/main.cpp
+        src/ui/windowcontroller.h src/ui/windowcontroller.cpp
         ${TS_FILES}
 )
 
@@ -135,6 +136,7 @@ if(BUILD_TESTING)
 
     add_executable(Debil_BrowserTests
         browser_all_components_test.cpp
+        src/ui/windowcontroller.h src/ui/windowcontroller.cpp
         src/core/browser_framework.h src/core/browser_framework.cpp
         src/core/mainpannel.h src/core/mainpannel.cpp
         src/core/headerpanel.h src/core/headerpanel.cpp
