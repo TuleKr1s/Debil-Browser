@@ -1,5 +1,7 @@
 #include "headerpanel.h"
 
+#include <QWindow>
+
 HeaderPanel::HeaderPanel(QWidget *parent)
     : QWidget{parent}
 {
@@ -40,6 +42,12 @@ void HeaderPanel::mousePressEvent(QMouseEvent* e)
         || child == Mergered_TabsContent::getTabManager();
     if (e->button() == Qt::LeftButton && isDragArea)
     {
+        if (auto* handle = window()->windowHandle(); handle && handle->startSystemMove())
+        {
+            m_isDragging = false;
+            e->accept();
+            return;
+        }
         this->setMousePrevPos(e->pos());
         m_isDragging = true;
         e->accept();
@@ -48,6 +56,20 @@ void HeaderPanel::mousePressEvent(QMouseEvent* e)
 
     m_isDragging = false;
     return QWidget::mousePressEvent(e);
+}
+
+void HeaderPanel::mouseDoubleClickEvent(QMouseEvent* e)
+{
+    QWidget* child = childAt(e->position().toPoint());
+    const bool isDragArea = child == nullptr
+        || child == Mergered_TabsContent::getTabManager();
+    if (e->button() == Qt::LeftButton && isDragArea)
+    {
+        window()->isMaximized() ? window()->showNormal() : window()->showMaximized();
+        e->accept();
+        return;
+    }
+    QWidget::mouseDoubleClickEvent(e);
 }
 
 void HeaderPanel::mouseMoveEvent(QMouseEvent* e)

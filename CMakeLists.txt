@@ -97,6 +97,10 @@ target_link_libraries(Debil_Browser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
                                             Qt${QT_VERSION_MAJOR}::WebEngineWidgets
                                             Qt${QT_VERSION_MAJOR}::Multimedia)
 
+if(WIN32)
+    target_link_libraries(Debil_Browser PRIVATE dwmapi)
+endif()
+
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -167,6 +171,9 @@ if(BUILD_TESTING)
     )
 
     add_test(NAME Debil_BrowserTests COMMAND Debil_BrowserTests)
+    if(WIN32)
+        target_link_libraries(Debil_BrowserTests PRIVATE dwmapi)
+    endif()
     set_tests_properties(Debil_BrowserTests PROPERTIES
         TIMEOUT 180
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QTWEBENGINE_DISABLE_SANDBOX=1;QT_OPENGL=software;QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu --no-sandbox"

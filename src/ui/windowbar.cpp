@@ -1,5 +1,10 @@
 #include "windowbar.h"
 
+#include <QGuiApplication>
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
+
 WindowBar::WindowBar(QWidget *parent)
     : QWidget{parent}
 {
@@ -8,6 +13,9 @@ WindowBar::WindowBar(QWidget *parent)
     m_minimizeBtn = new QPushButton(this);
     m_fullWindowBtn = new QPushButton(this);
     m_closeWindowBtn = new QPushButton(this);
+    m_minimizeBtn->setObjectName("windowMinimizeButton");
+    m_fullWindowBtn->setObjectName("windowMaximizeButton");
+    m_closeWindowBtn->setObjectName("windowCloseButton");
 
     full_window_btn.addFile(":/assets/WindowBar/full_window_btn.png");
     half_window_btn.addFile(":/assets/WindowBar/half_window_btn.png");
@@ -57,12 +65,27 @@ void WindowBar::onCloseBtnClicked()
 
 void WindowBar::onMinimizeBtnClicked()
 {
+#ifdef Q_OS_WIN
+    if (QGuiApplication::platformName() == "windows")
+    {
+        PostMessageW(reinterpret_cast<HWND>(window()->winId()), WM_SYSCOMMAND, SC_MINIMIZE, 0);
+        return;
+    }
+#endif
     window()->showMinimized();
 }
 
 
 void WindowBar::onFullWindowBtnClicked()
 {
+#ifdef Q_OS_WIN
+    if (QGuiApplication::platformName() == "windows" && !window()->isFullScreen())
+    {
+        const auto hwnd = reinterpret_cast<HWND>(window()->winId());
+        PostMessageW(hwnd, WM_SYSCOMMAND, IsZoomed(hwnd) ? SC_RESTORE : SC_MAXIMIZE, 0);
+        return;
+    }
+#endif
     if (window()->isMaximized()) {
         window()->showNormal();
     }

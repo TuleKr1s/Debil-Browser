@@ -22,13 +22,24 @@ class Browser_Framework : public QWidget
 public:
     explicit Browser_Framework(QWidget *parent = nullptr);
 
+protected:
+#ifdef Q_OS_WIN
+    bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
+    bool event(QEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
+#endif
+
 private:
 
 
     TabManager* m_tab_manager;
 
     MainPannel* main_pannel;
-    HeaderPanel* header_panel;
+    HeaderPanel* header_panel = nullptr;
+#ifdef Q_OS_WIN
+    bool m_maximizePressed = false;
+    QRect m_preservedNormalPlacement;
+#endif
 
 
     QVBoxLayout* main_lay;

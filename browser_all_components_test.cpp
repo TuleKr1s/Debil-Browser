@@ -13,6 +13,13 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QUrl>
+#include <QWindow>
+
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#include <windowsx.h>
+#include <dwmapi.h>
+#endif
 
 #include "src/core/browser_framework.h"
 #include "src/core/headerpanel.h"
@@ -73,6 +80,7 @@ private slots:
     void mergedTabsAndHeaderPanelAreConnected();
     void browserFrameworkStartsAndNavigatesFromHomePage();
     void tabManagerClosesTabs();
+    void nativeWindowKeepsCaptionBehaviorAndVisibleHeader();
 
 private:
     static QLineEdit *addressInput(AddressBarWidget &addressBar);
@@ -729,6 +737,153 @@ void BrowserAllComponentsTest::browserFrameworkStartsAndNavigatesFromHomePage()
     QTRY_VERIFY(addressInput(*mainPanel->address_bar)->text().isEmpty());
 
     browser.close();
+}
+
+void BrowserAllComponentsTest::nativeWindowKeepsCaptionBehaviorAndVisibleHeader()
+{
+#ifdef Q_OS_WIN
+    if (QGuiApplication::platformName() != "windows")
+        QSKIP("Requires the Windows platform plugin, not the offscreen test backend");
+
+    Browser_Framework browser;
+    QVERIFY(QTest::qWaitForWindowExposed(&browser));
+    auto hwnd = reinterpret_cast<HWND>(browser.winId());
+    auto* header = browser.findChild<HeaderPanel*>();
+    auto* manager = browser.findChild<TabManager*>();
+    auto* maximize = browser.findChild<QPushButton*>("windowMaximizeButton");
+    QVERIFY(header);
+    QVERIFY(manager);
+    QVERIFY(maximize);
+
+    auto checkWindowStyles = [&] {
+        const LONG_PTR style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+        return (style & WS_CAPTION) == WS_CAPTION && (style & WS_THICKFRAME)
+            && (style & WS_SYSMENU) && (style & WS_MINIMIZEBOX) && (style & WS_MAXIMIZEBOX);
+    };
+    auto hasSquareCorners = [&] {
+        DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_DEFAULT;
+        if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE,
+                                          &preference, sizeof(preference))))
+            return preference == DWMWCP_DONOTROUND;
+        RECT frame{};
+        GetWindowRect(hwnd, &frame);
+        const int width = frame.right - frame.left;
+        const int height = frame.bottom - frame.top;
+        HRGN region = CreateRectRgn(0, 0, 0, 0);
+        const bool square = GetWindowRgn(hwnd, region) == SIMPLEREGION
+            && PtInRegion(region, 0, 0) && PtInRegion(region, width - 1, 0)
+            && PtInRegion(region, 0, height - 1) && PtInRegion(region, width - 1, height - 1);
+        DeleteObject(region);
+        return square;
+    };
+    QVERIFY(checkWindowStyles());
+    SendMessageW(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+    QTRY_VERIFY(!browser.isMaximized());
+    QTRY_COMPARE(browser.size(), QSize(916, 739));
+    QVERIFY(hasSquareCorners());
+    browser.resize(840, 560);
+    QCoreApplication::processEvents();
+    const QSize lastNormalSize = browser.size();
+    WINDOWPLACEMENT beforeTab{sizeof(WINDOWPLACEMENT)};
+    auto placementSize = [&] {
+        GetWindowPlacement(hwnd, &beforeTab);
+        return QSize(beforeTab.rcNormalPosition.right - beforeTab.rcNormalPosition.left,
+                     beforeTab.rcNormalPosition.bottom - beforeTab.rcNormalPosition.top);
+    };
+    QTRY_COMPARE(placementSize(), QSize(qRound(lastNormalSize.width() * browser.devicePixelRatioF()),
+                                       qRound(lastNormalSize.height() * browser.devicePixelRatioF())));
+    QVERIFY(GetWindowPlacement(hwnd, &beforeTab));
+    const QSize normalPlacementSize(beforeTab.rcNormalPosition.right - beforeTab.rcNormalPosition.left,
+                                    beforeTab.rcNormalPosition.bottom - beforeTab.rcNormalPosition.top);
+    SendMessageW(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+    QTRY_VERIFY(browser.isMaximized());
+    manager->createTab(QUrl("about:blank"));
+    QCoreApplication::processEvents();
+    // QWebEngine can recreate the top-level native window for its render surface.
+    hwnd = reinterpret_cast<HWND>(browser.winId());
+    QVERIFY(checkWindowStyles());
+    WINDOWPLACEMENT afterTab{sizeof(WINDOWPLACEMENT)};
+    QVERIFY(GetWindowPlacement(hwnd, &afterTab));
+    QCOMPARE(QSize(afterTab.rcNormalPosition.right - afterTab.rcNormalPosition.left,
+                   afterTab.rcNormalPosition.bottom - afterTab.rcNormalPosition.top), normalPlacementSize);
+    // ExpandedClientAreaHint creates an extra native titlebar child. It must
+    // never reappear over the tabs, including after creating a web view.
+    bool hasTitlebarOverlay = false;
+    EnumChildWindows(hwnd, [](HWND child, LPARAM data) -> BOOL {
+        wchar_t className[256]{};
+        GetClassNameW(child, className, 256);
+        if (QString::fromWCharArray(className).contains("_q_titlebar"))
+            *reinterpret_cast<bool*>(data) = true;
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&hasTitlebarOverlay));
+    QVERIFY(!hasTitlebarOverlay);
+
+    auto nativeHitTest = [&](QPoint pos) {
+        POINT native{qRound(pos.x() * browser.devicePixelRatioF()),
+                     qRound(pos.y() * browser.devicePixelRatioF())};
+        ClientToScreen(hwnd, &native);
+        return SendMessageW(hwnd, WM_NCHITTEST, 0, MAKELPARAM(native.x, native.y));
+    };
+    auto clientRectOnScreen = [&] {
+        RECT client{};
+        GetClientRect(hwnd, &client);
+        MapWindowPoints(hwnd, nullptr, reinterpret_cast<POINT*>(&client), 2);
+        return QRect(client.left, client.top, client.right - client.left, client.bottom - client.top);
+    };
+    MONITORINFO monitor{sizeof(MONITORINFO)};
+    QVERIFY(GetMonitorInfoW(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitor));
+    const QRect work(monitor.rcWork.left, monitor.rcWork.top,
+                     monitor.rcWork.right - monitor.rcWork.left,
+                     monitor.rcWork.bottom - monitor.rcWork.top);
+    QCOMPARE(clientRectOnScreen(), work);
+    QCOMPARE(header->geometry().top(), 0);
+    QVERIFY(browser.rect().contains(header->geometry()));
+    QVERIFY(maximize->isVisible());
+    QCOMPARE(nativeHitTest(header->mapTo(&browser, QPoint(header->width() / 2, header->height() / 2))),
+             LRESULT(HTCAPTION));
+    QCOMPARE(nativeHitTest(maximize->mapTo(&browser, maximize->rect().center())), LRESULT(HTMAXBUTTON));
+
+    SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTMAXBUTTON, 0);
+    SendMessageW(hwnd, WM_NCLBUTTONUP, HTMAXBUTTON, 0);
+    QTRY_VERIFY(!browser.isMaximized());
+    QTRY_COMPARE(browser.size(), lastNormalSize);
+    QVERIFY(hasSquareCorners());
+    QVERIFY(checkWindowStyles());
+    QCOMPARE(nativeHitTest(QPoint(1, 1)), LRESULT(HTTOPLEFT));
+    browser.resize(920, 640);
+    QTRY_COMPARE(placementSize(), QSize(qRound(browser.width() * browser.devicePixelRatioF()),
+                                       qRound(browser.height() * browser.devicePixelRatioF())));
+    const QSize updatedNormalSize = browser.size();
+    SendMessageW(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+    QTRY_VERIFY(browser.isMaximized());
+    manager->createTab(QUrl("about:blank"));
+    QCoreApplication::processEvents();
+    hwnd = reinterpret_cast<HWND>(browser.winId());
+    SendMessageW(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+    QTRY_COMPARE(browser.size(), updatedNormalSize);
+    QVERIFY(hasSquareCorners());
+    browser.showFullScreen();
+    QTRY_VERIFY(browser.isFullScreen());
+    const QRect screen(monitor.rcMonitor.left, monitor.rcMonitor.top,
+                       monitor.rcMonitor.right - monitor.rcMonitor.left,
+                       monitor.rcMonitor.bottom - monitor.rcMonitor.top);
+    QTRY_COMPARE(clientRectOnScreen(), screen);
+    QVERIFY(browser.rect().contains(header->geometry()));
+    browser.showNormal();
+    QTRY_VERIFY(!browser.isFullScreen());
+    QVERIFY(hasSquareCorners());
+    QVERIFY(checkWindowStyles());
+    auto* bar = browser.findChild<WindowBar*>();
+    QVERIFY(QMetaObject::invokeMethod(bar, "onMinimizeBtnClicked"));
+    QTRY_VERIFY(browser.isMinimized());
+    SendMessageW(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+    QTRY_VERIFY(!browser.isMinimized());
+    QVERIFY(hasSquareCorners());
+    QVERIFY(checkWindowStyles());
+    browser.close();
+#else
+    QSKIP("Windows-only native frame regression test");
+#endif
 }
 
 QLineEdit *BrowserAllComponentsTest::addressInput(AddressBarWidget &addressBar)
