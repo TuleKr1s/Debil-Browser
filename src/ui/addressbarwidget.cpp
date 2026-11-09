@@ -70,7 +70,7 @@ AddressBarWidget::AddressBarWidget(QWidget *parent)
     this->setLayout(addressBar_layout);
 
     this->setMinimumWidth(325);
-    this->setMaximumWidth(1000);
+    //this->setMaximumWidth(1000);
     this->setFixedHeight(32);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 

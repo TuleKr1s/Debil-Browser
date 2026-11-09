@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools WebEngineWidgets Multimedia Sql)
 
 set(TS_FILES Debil_Browser_en_001.ts)
 
@@ -88,15 +88,21 @@ qt_add_resources(BrowserResources
     resources.qrc
 )
 
-add_library(BrowserResourcesObject OBJECT ${BrowserResources})
-target_link_libraries(BrowserResourcesObject PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+add_library(BrowserResourcesObject OBJECT ${BrowserResources}
+    src/storage/apppath.h src/storage/apppath.cpp
+    src/bookmarks/bookmarkdatabase.h src/bookmarks/bookmarkdatabase.cpp)
+target_link_libraries(BrowserResourcesObject PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Sql
+)
 
 target_sources(Debil_Browser PRIVATE $<TARGET_OBJECTS:BrowserResourcesObject>)
 
 
 target_link_libraries(Debil_Browser PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
                                             Qt${QT_VERSION_MAJOR}::WebEngineWidgets
-                                            Qt${QT_VERSION_MAJOR}::Multimedia)
+                                            Qt${QT_VERSION_MAJOR}::Multimedia
+                                            Qt${QT_VERSION_MAJOR}::Sql)
 
 if(WIN32)
     target_link_libraries(Debil_Browser PRIVATE dwmapi)
@@ -170,6 +176,7 @@ if(BUILD_TESTING)
         Qt${QT_VERSION_MAJOR}::Test
         Qt${QT_VERSION_MAJOR}::WebEngineWidgets
         Qt${QT_VERSION_MAJOR}::Multimedia
+        Qt${QT_VERSION_MAJOR}::Sql
     )
 
     add_test(NAME Debil_BrowserTests COMMAND Debil_BrowserTests)

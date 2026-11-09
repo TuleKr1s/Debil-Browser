@@ -1,2 +1,0 @@
-file to display full project structure 
-(ебаный гит не видит папку если в нем нет файлов)
