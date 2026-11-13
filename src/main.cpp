@@ -19,6 +19,10 @@ int main(int argc, char *argv[])
     // to avoid the visual bug which recreating the window
     qputenv("QT_WIDGETS_RHI", "1");
 
+    qSetMessagePattern(
+        "[%{time yyyy-MM-dd hh:mm:ss}] %{message}"
+    );
+
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); // hardware acceleration
     QCoreApplication::setOrganizationName("Debil");
     QCoreApplication::setApplicationName("Debil Browser");

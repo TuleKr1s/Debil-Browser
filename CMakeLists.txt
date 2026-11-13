@@ -90,7 +90,8 @@ qt_add_resources(BrowserResources
 
 add_library(BrowserResourcesObject OBJECT ${BrowserResources}
     src/storage/apppath.h src/storage/apppath.cpp
-    src/bookmarks/bookmarkdatabase.h src/bookmarks/bookmarkdatabase.cpp)
+    src/bookmarks/bookmarkdatabase.h src/bookmarks/bookmarkdatabase.cpp
+    src/bookmarks/BookmarkData.h)
 target_link_libraries(BrowserResourcesObject PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Sql

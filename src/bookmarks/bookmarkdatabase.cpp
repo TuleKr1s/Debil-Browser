@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QUrl>
 
 BookmarkDataBase::BookmarkDataBase()
 {
@@ -18,7 +19,7 @@ bool BookmarkDataBase::openDatabase()
 
     if (m_database.open())
     {
-        qDebug() << "[INFO] Bookmark database successfully opened";
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Database successfully opened";
 
         QSqlQuery query(m_database);
         if (!query.exec("PRAGMA foreign_keys = ON"))
@@ -28,10 +29,10 @@ bool BookmarkDataBase::openDatabase()
         }
 
         if (this->createTables())
-            qDebug() << "[INFO] Tables successfully created";
+            qDebug() << "[INFO][BOOKMARKS DATABASE] Tables successfully created";
         else
         {
-            qDebug() << "[ERROR] Failed to create tables";
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to create tables";
             return false;
         }
 
@@ -39,7 +40,7 @@ bool BookmarkDataBase::openDatabase()
     }
     else
     {
-        qDebug() << "[ERROR] Failed to open bookmark database: "
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to open database: "
                  << m_database.lastError().text();
         return false;
     }
@@ -82,9 +83,484 @@ bool BookmarkDataBase::createTables()
     return true;
 }
 
+std::optional<qint64> BookmarkDataBase::addFolder(QString title, QByteArray icon,
+                                std::optional<qint64> parent_folder, int serial_num)
+{
+    QSqlQuery query(m_database);
+    if (!query.prepare(R"SQL(
+        INSERT INTO bookmarks_folders (folder_name, folder_icon, id_parent, serial_num)
+        VALUES (:folder_name, :folder_icon, :id_parent, :serial_num);
+    )SQL"))
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    query.bindValue(":folder_name", title);
+    query.bindValue(":folder_icon", icon.isEmpty() ?
+                                        QVariant(QMetaType::fromType<QByteArray>())
+                                                   : icon);
+    query.bindValue(":id_parent", parent_folder ?
+                                      QVariant(parent_folder.value())
+                                                : QVariant(QMetaType::fromType<qint64>()));
+    query.bindValue(":serial_num", serial_num);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    bool ok = false;
+    std::optional<qint64> id = query.lastInsertId().toLongLong(&ok);
+
+    if (ok)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Folder was successfully added to table \"bookmarks_folders\"";
+        return id;
+    }
+    else
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed convertating id from LongLong "
+                    "while adding the folder to database";
+        return std::nullopt;
+    }
+
+}
+
+std::optional<qint64> BookmarkDataBase::addBookmark(QUrl url, QString title, QByteArray icon,
+                                            std::optional<qint64> id_parent, int serial_num)
+{
+    QSqlQuery query(m_database);
+
+    if (!query.prepare(R"SQL(
+            INSERT INTO bookmarks (url, page_name, page_icon, id_parent, serial_num)
+            VALUES (:url, :page_name, :page_icon, :id_parent, :serial_num);
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    query.bindValue(":url", url.toString());
+    query.bindValue(":page_name", title);
+    query.bindValue(":page_icon", icon.isEmpty() ?
+                                        QVariant(QMetaType::fromType<QByteArray>())
+                                                : icon);
+    query.bindValue(":id_parent", id_parent ?
+                                      QVariant(id_parent.value())
+                                            : QVariant(QMetaType::fromType<qint64>()));
+    query.bindValue(":serial_num", serial_num);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    bool ok = false;
+    std::optional<qint64> id = query.lastInsertId().toLongLong(&ok);
+
+    if (ok)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Bookmark was successfully added to table \"bookmarks\"";
+        return id;
+    }
+    else
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed convertating id from LongLong "
+                    "while adding the bookmark to database";
+        return std::nullopt;
+    }
+}
+
+std::optional<QList<BookmarkData>> BookmarkDataBase::getBookmarks(std::optional<qint64> id_parent)
+{
+    QSqlQuery query(m_database);
+    if (!query.prepare(R"SQL(
+            SELECT id, url, page_name, page_icon, serial_num
+            FROM bookmarks
+            WHERE id_parent IS :id_parent
+            ORDER BY serial_num ASC, id ASC
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    query.bindValue(":id_parent", id_parent ?
+                                       QVariant(id_parent.value())
+                                             : QVariant(QMetaType::fromType<qint64>()));
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    QList<BookmarkData> bookmarks_list;
+    while(query.next())
+    {
+        BookmarkData bookmark;
+
+        bookmark.id = query.value("id").toLongLong();
+        bookmark.url = query.value("url").toString();
+        bookmark.page_name = query.value("page_name").toString();
+        bookmark.page_icon = query.value("page_icon").toByteArray();
+        bookmark.id_parent = id_parent;
+        bookmark.serial_num = query.value("serial_num").toInt();
+
+        bookmarks_list.append(bookmark);
+    }
+
+    if (query.lastError().isValid())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    return bookmarks_list;
+}
+
+std::optional<QList<FolderData>> BookmarkDataBase::getFolders(std::optional<qint64> id_parent)
+{
+    QSqlQuery query(m_database);
+    if (!query.prepare(R"SQL(
+            SELECT id, folder_name, folder_icon, serial_num
+            FROM bookmarks_folders
+            WHERE id_parent IS :id_parent
+            ORDER BY serial_num ASC, id ASC
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    query.bindValue(":id_parent", id_parent ?
+                                      QVariant(id_parent.value())
+                                            : QVariant(QMetaType::fromType<qint64>()));
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    QList<FolderData> folders_list;
+    while(query.next())
+    {
+        FolderData folder;
+
+        folder.id = query.value("id").toLongLong();
+        folder.folder_name = query.value("folder_name").toString();
+        folder.folder_icon = query.value("folder_icon").toByteArray();
+        folder.id_parent = id_parent;
+        folder.serial_num = query.value("serial_num").toInt();
+
+        folders_list.append(folder);
+    }
+
+    if (query.lastError().isValid())
+    {
+        queryErrorHandler(query);
+        return std::nullopt;
+    }
+
+    return folders_list;
+}
+
+bool BookmarkDataBase::deleteBookmark(qint64 id)
+{
+    QSqlQuery query(m_database);
+
+    // getting page_name of deleting bookmark
+    if (!query.prepare(R"SQL(
+            SELECT page_name
+            FROM bookmarks
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    QString page_name;
+    if (query.next())
+    {
+        page_name = query.value("page_name").toString();
+    }
+    else
+    {
+        if (query.lastError().isValid())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+    }
+
+
+
+    // deleting bookmark by id
+    if (!query.prepare(R"SQL(
+            DELETE FROM bookmarks
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    if (query.numRowsAffected() == 1)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE]"
+                 << "Bookmark DELETE executed, affected rows:"
+                 << query.numRowsAffected() << "ID:" << id;
+        return true;
+    }
+    else
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] The bookmark with id: "
+                 << id << ", was not found";
+        return false;
+    }
+
+}
+
+bool BookmarkDataBase::deleteFolder(qint64 id)
+{
+    if (!m_database.transaction())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to start transaction: "
+                 << m_database.lastError().text();
+        return false;
+    }
+
+    if (!deleteFolderRecursive(id))
+    {
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Rollback failed: "
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    if (!m_database.commit())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Commit failed: "
+                 << m_database.lastError().text();
+
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Rollback failed: "
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool BookmarkDataBase::deleteFolderRecursive(qint64 id)
+{
+    QSqlQuery query(m_database);
+
+    // getting page_name of deleting folder
+    if (!query.prepare(R"SQL(
+            SELECT folder_name
+            FROM bookmarks_folders
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    QString folder_name;
+    if (query.next())
+    {
+        folder_name = query.value("folder_name").toString();
+    }
+    else
+    {
+        if (query.lastError().isValid())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+    }
+
+    // going to last folder in the hierarchy
+    if (!query.prepare(R"SQL(
+            SELECT id
+            FROM bookmarks_folders
+            WHERE id_parent = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    while (query.next())
+    {
+        qint64 child_id = query.value("id").toLongLong();
+        if (!deleteFolderRecursive(child_id))
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to delete folder with id: " << child_id;
+            return false;
+        }
+    }
+
+    if (query.lastError().isValid())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    // deleting every the bookmark from the folder
+    if(!query.prepare(R"SQL(
+            SELECT id
+            FROM bookmarks
+            WHERE id_parent = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    while (query.next())
+    {
+        qint64 bookmark_id = query.value("id").toLongLong();
+        if (!this->deleteBookmark(bookmark_id))
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to delete bookmark with id: " << bookmark_id;
+            return false;
+        }
+
+    }
+
+    if (query.lastError().isValid())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    if (!query.prepare(R"SQL(
+            DELETE FROM bookmarks_folders
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", id);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    if (query.numRowsAffected() == 1)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE]"
+                 << "Folder DELETE executed, affected rows:"
+                 << query.numRowsAffected() << "ID:" << id;
+        return true;
+    }
+    else
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] The folder with id: "
+                 << id << ", was not found";
+        return false;
+    }
+}
+
+bool BookmarkDataBase::updateBookmark(const BookmarkData& bookmark)
+{
+
+    QSqlQuery query(m_database);
+    if (!query.prepare(R"SQL(
+            UPDATE bookmarks
+            SET url = :url,
+                page_name = :page_name,
+                page_icon = :page_icon,
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", bookmark.id);
+    query.bindValue(":url", bookmark.url);
+    query.bindValue(":page_name", bookmark.page_name);
+    query.bindValue(":page_icon", bookmark.page_icon.isEmpty() ?
+                                      QVariant(QMetaType::fromType<QByteArray>())
+                                                 : bookmark.page_icon);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    if (query.numRowsAffected() > 0)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Data of the bookmark \""
+                 << bookmark.page_name << "\" was changed";
+        return true;
+    }
+    else
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Data of the bookmark \""
+                 << bookmark.page_name << "\" was NOT changed";
+        return false;
+    }
+}
+
 void BookmarkDataBase::queryErrorHandler(QSqlQuery& query)
 {
-    qDebug() << "[ERROR] Error occurred while processing the query:"
+    qDebug() << "[ERROR][BOOKMARKS DATABASE] Error occurred while processing the query:"
              << query.lastQuery() << query.lastError().text();
 }
 
