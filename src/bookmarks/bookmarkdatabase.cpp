@@ -523,7 +523,7 @@ bool BookmarkDataBase::updateBookmark(const BookmarkData& bookmark)
             UPDATE bookmarks
             SET url = :url,
                 page_name = :page_name,
-                page_icon = :page_icon,
+                page_icon = :page_icon
             WHERE id = :id
         )SQL"))
     {
@@ -556,6 +556,453 @@ bool BookmarkDataBase::updateBookmark(const BookmarkData& bookmark)
                  << bookmark.page_name << "\" was NOT changed";
         return false;
     }
+}
+
+bool BookmarkDataBase::updateFolder(const FolderData& folder)
+{
+    QSqlQuery query(m_database);
+
+    if(!query.prepare(R"SQL(
+            UPDATE bookmarks_folders
+            SET folder_name = :folder_name,
+                folder_icon = :folder_icon
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", folder.id);
+    query.bindValue(":folder_name", folder.folder_name);
+    query.bindValue(":folder_icon", folder.folder_icon.isEmpty() ?
+                                        QVariant(QMetaType::fromType<QByteArray>())
+                                                                 : folder.folder_icon);
+
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    if (query.numRowsAffected() > 0)
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Data of the folder \""
+                 << folder.folder_name << "\" was changed";
+        return true;
+    }
+    else
+    {
+        qDebug() << "[INFO][BOOKMARKS DATABASE] Data of the folder \""
+                 << folder.folder_name << "\" was NOT changed";
+        return false;
+    }
+}
+
+bool BookmarkDataBase::moveBookmark(qint64 bookmark_id,
+                                    std::optional<qint64> new_folder,
+                                    int serial_num)
+{
+    if (serial_num < 0)
+        return false;
+
+    if (!m_database.transaction())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to start move transaction:"
+                 << m_database.lastError().text();
+        return false;
+    }
+
+    if (!moveBookmarkInTransaction(bookmark_id, new_folder, serial_num))
+    {
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Move rollback failed:"
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    if (!m_database.commit())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Move commit failed:"
+                 << m_database.lastError().text();
+
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Move rollback failed:"
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    qDebug() << "[INFO][BOOKMARKS DATABASE] Bookmark moved. ID:" << bookmark_id
+             << "Position:" << serial_num;
+    return true;
+}
+
+bool BookmarkDataBase::moveBookmarkInTransaction(qint64 bookmark_id,
+                                                std::optional<qint64> new_folder,
+                                                int serial_num)
+{
+    QSqlQuery query(m_database);
+
+    // Getting the current parent of the bookmark.
+    if (!query.prepare(R"SQL(
+            SELECT id_parent FROM bookmarks WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+    query.bindValue(":id", bookmark_id);
+    if (!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+    if (!query.next())
+    {
+        if (query.lastError().isValid())
+            queryErrorHandler(query);
+        return false;
+    }
+    std::optional<qint64> old_folder;
+    if (!query.isNull("id_parent"))
+        old_folder = query.value("id_parent").toLongLong();
+    query.finish();
+
+    // Checking that the destination folder exists. NULL means the root.
+    if (new_folder)
+    {
+        if (!query.prepare(R"SQL(
+                SELECT id FROM bookmarks_folders WHERE id = :id
+            )SQL"))
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+        query.bindValue(":id", new_folder.value());
+        if (!query.exec())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+        if (!query.next())
+        {
+            if (query.lastError().isValid())
+                queryErrorHandler(query);
+            return false;
+        }
+        query.finish();
+    }
+
+    // Getting the bookmarks in their saved order.
+    std::optional<QList<BookmarkData>> result = getBookmarks(old_folder);
+    if (!result)
+        return false;
+    QList<BookmarkData> old_folder_bookmarks = result.value();
+
+    int old_position = -1;
+    for (int i = 0; i < old_folder_bookmarks.size(); ++i)
+    {
+        if (old_folder_bookmarks[i].id == bookmark_id)
+        {
+            old_position = i;
+            break;
+        }
+    }
+    if (old_position < 0)
+        return false;
+
+    // Removing the bookmark from its old place in the list.
+    BookmarkData moved_bookmark = old_folder_bookmarks.takeAt(old_position);
+    QList<BookmarkData> new_folder_bookmarks;
+    if (old_folder == new_folder)
+    {
+        new_folder_bookmarks = old_folder_bookmarks;
+    }
+    else
+    {
+        result = getBookmarks(new_folder);
+        if (!result)
+            return false;
+        new_folder_bookmarks = result.value();
+    }
+
+    // The last allowed position is the end of the destination list.
+    if (serial_num > new_folder_bookmarks.size())
+        return false;
+    new_folder_bookmarks.insert(serial_num, moved_bookmark);
+
+    QList<BookmarkData> changed_bookmarks;
+
+    // Closing the gap in the source folder when moving to another folder.
+    if (old_folder != new_folder)
+    {
+        for (int i = 0; i < old_folder_bookmarks.size(); ++i)
+        {
+            if (old_folder_bookmarks[i].serial_num != i)
+            {
+                old_folder_bookmarks[i].serial_num = i;
+                changed_bookmarks.append(old_folder_bookmarks[i]);
+            }
+        }
+    }
+
+    // Numbering the destination list and remembering only changed bookmarks.
+    for (int i = 0; i < new_folder_bookmarks.size(); ++i)
+    {
+        if (new_folder_bookmarks[i].serial_num != i
+            || new_folder_bookmarks[i].id_parent != new_folder)
+        {
+            new_folder_bookmarks[i].serial_num = i;
+            new_folder_bookmarks[i].id_parent = new_folder;
+            changed_bookmarks.append(new_folder_bookmarks[i]);
+        }
+    }
+
+    // Saving the changed positions. The public method commits or rolls back.
+    if (!query.prepare(R"SQL(
+            UPDATE bookmarks
+            SET id_parent = :id_parent, serial_num = :serial_num
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+    for (int i = 0; i < changed_bookmarks.size(); ++i)
+    {
+        BookmarkData bookmark = changed_bookmarks[i];
+        query.bindValue(":id", bookmark.id);
+        query.bindValue(":id_parent", bookmark.id_parent ?
+                                          QVariant(bookmark.id_parent.value())
+                                                : QVariant(QMetaType::fromType<qint64>()));
+        query.bindValue(":serial_num", bookmark.serial_num);
+        if (!query.exec())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+        if (query.numRowsAffected() != 1)
+            return false;
+    }
+    return true;
+}
+
+bool BookmarkDataBase::moveFolder(qint64 folder_id,
+                                  std::optional<qint64> new_folder,
+                                  int serial_num)
+{
+
+    if (serial_num < 0)
+        return false;
+
+    if (!m_database.transaction())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Failed to start move transaction:"
+                 << m_database.lastError().text();
+        return false;
+    }
+
+    if (!moveFolderInTransaction(folder_id, new_folder, serial_num))
+    {
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Move rollback failed:"
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    if (!m_database.commit())
+    {
+        qDebug() << "[ERROR][BOOKMARKS DATABASE] Move commit failed:"
+                 << m_database.lastError().text();
+
+        if (!m_database.rollback())
+        {
+            qDebug() << "[ERROR][BOOKMARKS DATABASE] Move rollback failed:"
+                     << m_database.lastError().text();
+        }
+        return false;
+    }
+
+    qDebug() << "[INFO][BOOKMARKS DATABASE] Folder moved. ID:" << folder_id
+             << "Position:" << serial_num;
+    return true;
+
+}
+
+bool BookmarkDataBase::moveFolderInTransaction(qint64 folder_id,
+                                               std::optional<qint64> new_folder,
+                                               int serial_num)
+{
+    QSqlQuery query(m_database);
+
+    std::optional<qint64> current_parent = new_folder;
+    QList<qint64> checked_folders;
+
+    while (current_parent)
+    {
+        if (current_parent.value() == folder_id)
+            return false;
+
+        if (checked_folders.contains(current_parent.value()))
+            return false;
+
+        checked_folders.append(current_parent.value());
+
+        if (!query.prepare(R"SQL(
+            SELECT id_parent
+            FROM bookmarks_folders
+            WHERE id = :id
+        )SQL"))
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+
+        query.bindValue(":id", current_parent.value());
+
+        if (!query.exec())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+
+        if (!query.next())
+        {
+            if (query.lastError().isValid())
+                queryErrorHandler(query);
+
+            return false;
+        }
+
+        if (query.isNull("id_parent"))
+            current_parent = std::nullopt;
+        else
+            current_parent = query.value("id_parent").toLongLong();
+
+        query.finish();
+    }
+
+    if (!query.prepare(R"SQL(
+            SELECT id_parent FROM bookmarks_folders WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+
+    query.bindValue(":id", folder_id);
+    if(!query.exec())
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+    if (!query.next())
+    {
+        if (query.lastError().isValid())
+            queryErrorHandler(query);
+        return false;
+    }
+
+    std::optional<qint64> old_folder;
+    if (!query.isNull("id_parent"))
+        old_folder = query.value("id_parent").toLongLong();
+    query.finish();
+
+
+    std::optional<QList<FolderData>> result = getFolders(old_folder);
+    if (!result)
+        return false;
+    QList<FolderData> old_folder_folders = result.value();
+
+    int old_position = -1;
+    for (int i = 0; i < old_folder_folders.size(); ++i)
+    {
+        if (old_folder_folders[i].id == folder_id)
+        {
+            old_position = i;
+            break;
+        }
+    }
+    if (old_position < 0)
+        return false;
+
+
+    FolderData moved_folder = old_folder_folders.takeAt(old_position);
+    QList<FolderData> new_folder_folders;
+    if (old_folder == new_folder)
+    {
+        new_folder_folders = old_folder_folders;
+    }
+    else
+    {
+        result = getFolders(new_folder);
+        if(!result)
+            return false;
+        new_folder_folders = result.value();
+    }
+
+    if (serial_num > new_folder_folders.size())
+        return false;
+    new_folder_folders.insert(serial_num, moved_folder);
+
+    QList<FolderData> changed_folders;
+
+    if (old_folder != new_folder)
+    {
+        for (int i =0; i < old_folder_folders.size(); ++i)
+        {
+            if (old_folder_folders[i].serial_num != i)
+            {
+                old_folder_folders[i].serial_num = i;
+                changed_folders.append(old_folder_folders[i]);
+            }
+        }
+    }
+
+    for (int i = 0; i < new_folder_folders.size(); ++i)
+    {
+        if (new_folder_folders[i].serial_num != i
+            || new_folder_folders[i].id_parent != new_folder)
+        {
+            new_folder_folders[i].serial_num = i;
+            new_folder_folders[i].id_parent = new_folder;
+            changed_folders.append(new_folder_folders[i]);
+        }
+    }
+
+    if (!query.prepare(R"SQL(
+            UPDATE bookmarks_folders
+            SET id_parent = :id_parent, serial_num = :serial_num
+            WHERE id = :id
+        )SQL"))
+    {
+        queryErrorHandler(query);
+        return false;
+    }
+    for (int i = 0; i < changed_folders.size(); ++i)
+    {
+        FolderData folder = changed_folders[i];
+        query.bindValue(":id", folder.id);
+        query.bindValue(":id_parent", folder.id_parent ?
+                                          QVariant(folder.id_parent.value())
+                                                         : QVariant(QMetaType::fromType<qint64>()));
+        query.bindValue(":serial_num", folder.serial_num);
+        if (!query.exec())
+        {
+            queryErrorHandler(query);
+            return false;
+        }
+        if (query.numRowsAffected() != 1)
+            return false;
+    }
+
+    return true;
 }
 
 void BookmarkDataBase::queryErrorHandler(QSqlQuery& query)

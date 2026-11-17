@@ -28,13 +28,20 @@ public:
 
     bool deleteBookmark(qint64 id);
     bool deleteFolder(qint64 id);
+
     bool updateBookmark(const BookmarkData& bookmark);
+    bool updateFolder (const FolderData& folder);
+
+    bool moveBookmark(qint64 bookmark_id, std::optional<qint64> new_folder, int serial_num = 0);
+    bool moveFolder(qint64 folder_id, std::optional<qint64> new_folder, int serial_num = 0);
 
 private:
     QSqlDatabase m_database;
 
     bool createTables();
     bool deleteFolderRecursive(qint64 id);
+    bool moveBookmarkInTransaction(qint64 bookmark_id, std::optional<qint64> new_folder, int serial_num);
+    bool moveFolderInTransaction(qint64 folder_id, std::optional<qint64> new_folder, int serial_num);
 
     void queryErrorHandler(QSqlQuery& query);
 
